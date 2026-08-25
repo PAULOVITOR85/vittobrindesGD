@@ -1,0 +1,47 @@
+{
+  "name": "VITTO GD - Gráfica Digital",
+  "short_name": "VITTO GD",
+  "description": "Catálogo de Gráfica Digital e Comunicação Visual. Monte seu pedido e finalize no WhatsApp.",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#06070d",
+  "theme_color": "#0A0B10",
+  "categories": ["shopping", "business"],
+  "icons": [
+    {
+      "src": "img/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "img/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Ver catálogo",
+      "short_name": "Catálogo",
+      "url": "./index.html#catalogo",
+      "icons": [{ "src": "img/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Falar no WhatsApp",
+      "short_name": "WhatsApp",
+      "url": "https://wa.me/5521966667782"
+    }
+  ]
+}
