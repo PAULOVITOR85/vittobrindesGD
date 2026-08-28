@@ -75,7 +75,8 @@
   .filters input,.filters select,.filters button{padding:8px 12px;border:1px solid var(--borda);border-radius:8px;font-size:12.5px;outline:none;color:var(--txt);background:var(--card);font-family:inherit;transition:all .2s ease}
   .filters input:focus,.filters select:focus,.filters button:focus{border-color:var(--destaque);box-shadow:0 0 0 3px var(--destaque-dim)}
   .filters input{flex:1;min-width:200px;color:var(--branco)}
-  .filters select{color:var(--branco);cursor:pointer}
+   .filters select{color:var(--branco);cursor:pointer}
+   #subfilter{border:2px solid var(--destaque);background:var(--destaque-dim);font-weight:600;color:var(--destaque);box-shadow:0 0 8px var(--destaque-dim)}
   .filters select option{background:var(--card);color:var(--branco)}
   .filters button{cursor:pointer;font-weight:600;color:var(--txt);background:var(--card)}
   .filters button:hover{border-color:var(--destaque);color:var(--destaque);background:var(--destaque-dim)}
@@ -727,7 +728,7 @@
     <div class="cats" id="cats"></div>
     <div class="filters">
       <select id="categoria"><option value="">Todas as categorias</option></select>
-      <select id="subfilter" style="display:none"><option value="">Todos os materiais</option></select>
+      <select id="subfilter" style="display:none"><option value="">Opção de Material</option></select>
       <select id="ordem">
         <option value="cat">Ordenar: Categoria</option>
         <option value="nome">Ordenar: Nome</option>
@@ -1022,7 +1023,7 @@ function updateSubfilter(cat){
   const papeis = Object.keys(papelCounts).sort((a,b) => a.localeCompare(b, 'pt-BR'));
   if(papeis.length > 0){
     const prev = sub.value;
-    sub.innerHTML = '<option value="">Todos os materiais</option>';
+    sub.innerHTML = '<option value="">Opção de Material</option>';
     papeis.forEach(p => {
       sub.innerHTML += '<option value="' + p + '">' + p + ' (' + papelCounts[p] + ')</option>';
     });
