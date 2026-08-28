@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VITTO GD — Exportador Meta/WhatsApp</title>
+<style>body{font-family:system-ui,sans-serif;background:#06070d;color:#f1f5f9;max-width:900px;margin:0 auto;padding:28px}h1{color:#00e89d}button{background:#00e89d;color:#04141c;border:0;border-radius:10px;padding:12px 18px;font-weight:700;cursor:pointer}select,input{padding:10px;border-radius:8px;border:1px solid #2b3040;background:#10121a;color:#fff}table{width:100%;border-collapse:collapse;margin-top:20px;font-size:13px}th,td{padding:9px;border-bottom:1px solid #22283a;text-align:left}small,p{color:#a3adc0}.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.ok{color:#00e89d}</style>
+</head><body>
+<h1>Catálogo Meta / WhatsApp</h1>
+<p>Gera um CSV a partir do mesmo <code>produtos.js</code> usado pelo site. O arquivo inclui código, título, descrição, disponibilidade, preço, link do catálogo, imagem e categoria.</p>
+<div class="bar"><label>Modo <select id="modo"><option value="todos">Todos os produtos</option><option value="principais">1 produto principal por título/categoria</option></select></label><button onclick="baixar()">Baixar CSV</button></div>
+<p id="res" class="ok"></p><div id="preview"></div>
+<script src="produtos.js"></script><script>
+const SITE='https://paulovitor85.github.io/vittobrindesGD/';
+function clean(v){return String(v??'').replace(/\s+/g,' ').trim()}
+function csv(v){v=clean(v);return '"'+v.replace(/"/g,'""')+'"'}
+function desc(p){return clean([p.t,p.papel&&('Material: '+p.papel),p.tam&&('Tamanho: '+p.tam),p.cobertura&&('Acabamento: '+p.cobertura),p.prazo&&('Produção: '+p.prazo),'Personalização e opções completas disponíveis no catálogo online da VITTO GD.'].filter(Boolean).join(' | ')).slice(0,9999)}
+function itens(){const all=(window.PRODUTOS||[]).filter(p=>p.c&&p.t&&p.venda>0&&p.img);if(document.getElementById('modo').value==='todos')return all;const seen=new Set;return all.filter(p=>{const k=clean(p.cat)+'|'+clean(p.t);if(seen.has(k))return false;seen.add(k);return true})}
+function rows(){return itens().map(p=>({id:p.c,title:p.t,description:desc(p),availability:p.esgotado?'out of stock':'in stock',condition:'new',price:Number(p.venda).toFixed(2)+' BRL',link:SITE+'?produto='+encodeURIComponent(p.c),image_link:p.img,brand:'VITTO GD',product_type:p.cat||'Gráfica Digital'}))}
+const cols=['id','title','description','availability','condition','price','link','image_link','brand','product_type'];
+function baixar(){const r=rows(),txt='\ufeff'+cols.join(',')+'\r\n'+r.map(x=>cols.map(c=>csv(x[c])).join(',')).join('\r\n');const b=new Blob([txt],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='catalogo-vitto-meta.csv';a.click();URL.revokeObjectURL(a.href);document.getElementById('res').textContent=r.length+' itens exportados.';preview(r)}
+function preview(r=rows()){const x=r.slice(0,20);document.getElementById('res').textContent=r.length+' itens prontos para exportação.';document.getElementById('preview').innerHTML='<table><thead><tr><th>Produto</th><th>Categoria</th><th>Preço</th><th>Status</th></tr></thead><tbody>'+x.map(p=>'<tr><td>'+clean(p.title)+'</td><td>'+clean(p.product_type)+'</td><td>'+p.price+'</td><td>'+p.availability+'</td></tr>').join('')+'</tbody></table><small>Prévia dos primeiros '+x.length+' itens.</small>'}
+document.getElementById('modo').onchange=()=>preview();preview();
+</script></body></html>
