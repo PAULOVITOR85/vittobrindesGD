@@ -923,8 +923,9 @@ function card(p){
         ${p.tam ? `<div><b>Tam.:</b> ${p.tam}</div>` : ''}
       </div>
       <div class="preco">
-        <div class="lbl">A partir de</div>
+        <div class="lbl">${p.cfg.packprices ? 'A partir de (un)' : 'A partir de'}</div>
         <div class="val">R$ ${fmt(p.venda)}</div>
+        ${p.cfg.packprices ? '<div class="chip">Quantidades: ' + Object.keys(p.cfg.packprices).join(', ') + ' un</div>' : ''}
         ${p.cfg.tamlist ? '<div class="chip">Tamanhos padrão · folha A3</div>' : (p.cfg.custom ? '<div class="chip">Sob medida · digite o tamanho da arte (cm)</div>' : (p.cfg.fixed && p.cfg.unlbl ? '<div class="chip">Tamanho fixo · ' + p.cfg.unlbl + '</div>' : (p.cfg.fixed ? '<div class="chip">Tamanho fixo · preço por m²</div>' : (p.cfg.tp==='cm2' && p.cfg.fdp ? '<div class="chip">Sob medida · preço por folha A3</div>' : (p.cfg.tp==='m2' || (p.cfg.tp==='cm2' && p.cfg.m2) ? '<div class="chip">Sob medida · preço por m²</div>' : (p.cfg.tp==='cm2' ? '<div class="chip">Sob medida · preço por cm²</div>' : (p.cfg.tp==='m' ? '<div class="chip">Por metro linear · largura fixa</div>' : '')))))))}
         <div class="prazo">Produção: ${p.prazo || 'consulte'}${p.prazod ? ` · previsão ${dataEntrega(p.prazod)}` : ''}</div>
         <button class="btn-pedir" ${p.esgotado ? 'disabled' : `onclick="event.stopPropagation(); abrirPedido(${p.i})"`}>${p.esgotado ? 'Indisponível' : '🛒 Adicionar'}</button>
@@ -1463,7 +1464,7 @@ function iniciar(){
             msgEl.style.display = 'none';
             msgEl.textContent = '';
           }
-          document.getElementById('m-preco-row').style.display = C.packprices ? 'none' : '';
+          document.getElementById('m-preco-row').style.display = '';
           document.getElementById('medidas').value = '';
           mudarTamsel();
           recalcular();
@@ -1674,8 +1675,13 @@ function iniciar(){
           const ok = tamlist ? (r.pcArea > 0 && r.porFolha > 0) : (C.custom ? (r.pcArea > 0 && r.porFolha > 0) : ((C.tp !== 'm2' && C.tp !== 'cm2' && C.tp !== 'm') || r.area > 0));
           const tot = ok && r.venda > 0 ? r.venda : ATUAL.venda * qtd;
           const rot = C.custom ? 'Preço (folha A3)' : (C.unlbl ? 'Preço (' + C.unlbl + ')' : (C.tp === 'm2' || C.tp === 'm' || (C.tp === 'cm2' && C.m2) ? 'Preço (m²)' : (C.tp === 'cm2' ? 'Preço (cm²)' : 'Preço (unidade)')));
-          document.getElementById('m-lblpreco').textContent = ok ? rot : 'A partir de';
-          document.getElementById('m-uni').textContent = fmt(r.puEff != null ? r.puEff : (C.pu || 0));
+          if(C.packprices && qtd > 1){
+            document.getElementById('m-lblpreco').textContent = 'Preço por unidade';
+            document.getElementById('m-uni').textContent = fmt(tot / qtd);
+          } else {
+            document.getElementById('m-lblpreco').textContent = ok ? rot : 'A partir de';
+            document.getElementById('m-uni').textContent = fmt(r.puEff != null ? r.puEff : (C.pu || 0));
+          }
           document.getElementById('m-lbltotal').textContent = ok ? 'Total' : 'Valor a partir de';
           document.getElementById('m-total').textContent = fmt(tot);
         }
