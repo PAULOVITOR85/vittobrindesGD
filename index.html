@@ -1116,7 +1116,7 @@ function renderDestaques(){
   if(!track) return;
   const porCat = {};
   PRODUTOS.forEach((p, i) => { (porCat[p.cat] = porCat[p.cat] || []).push(i); });
-  const ordem = ['Adesivos', 'Banner, Lona e Faixa', 'Tecidos', 'PS e PVC', 'Wind Banner', 'DTF Têxtil', 'Tapete e Capacho', 'Papel Sublimático', 'Lambe-Lambe'];
+  const ordem = ['Adesivos', 'Banner, Lona e Faixa', 'Tecidos', 'PS e PVC', 'Wind Banner', 'DTF Têxtil', 'DTF UV para Rígidos', 'Tapete e Capacho', 'Papel Sublimático', 'Lambe-Lambe'];
   const idx = [];
   ordem.forEach(c => { if(porCat[c]) porCat[c].slice(0, 2).forEach(i => idx.push(i)); });
   PRODUTOS.forEach((p, i) => { if(idx.length >= 10) return; if(idx.indexOf(i) < 0) idx.push(i); });
