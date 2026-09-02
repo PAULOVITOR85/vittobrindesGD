@@ -444,9 +444,10 @@
      .filters input{width:100%;min-height:44px}
      .banner-info{flex-direction:column}
      .banner-info .bi{min-width:0}
-      .carousel{max-width:100%;margin:8px auto;border-radius:var(--radius)}
-     .carousel-slide{padding:14px 12px;min-height:auto}
-     .slide-content{padding:16px 12px;border-radius:var(--radius)}
+ .carousel{max-width:400px;margin:8px auto;border-radius:var(--radius);overflow:hidden}
+      .carousel-track{overflow:visible}
+      .carousel-slide{padding:14px 12px;min-height:auto;box-sizing:border-box;overflow:hidden}
+      .slide-content{padding:16px 12px;border-radius:var(--radius);max-width:100%;box-sizing:border-box;overflow:hidden}
      .slide-content h2{font-size:15px}
      .slide-content p{font-size:11px}
      .slide-content .banner-tag{font-size:10px;padding:3px 8px}
