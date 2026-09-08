@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 480">
+  <defs>
+    <linearGradient id="bg8" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#06070d"/>
+      <stop offset="100%" style="stop-color:#0a0d1a"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ffcc00"/>
+      <stop offset="100%" style="stop-color:#ff9900"/>
+    </linearGradient>
+  </defs>
+  <rect width="1080" height="480" fill="url(#bg8)"/>
+  <circle cx="850" cy="200" r="200" fill="#ffcc00" opacity="0.04"/>
+  <rect x="80" y="60" width="300" height="60" rx="30" fill="url(#gold)"/>
+  <text x="230" y="100" font-family="Arial, sans-serif" font-size="26" font-weight="900" fill="#06070d" text-anchor="middle">📢 DivulgaJÁ!</text>
+  <text x="80" y="180" font-family="Arial, sans-serif" font-size="52" font-weight="900" fill="#ffffff">DivulgaJÁ</text>
+  <text x="80" y="240" font-family="Arial, sans-serif" font-size="22" fill="#ffcc00" font-weight="700">500 panfletos 10x14 80g (Só Frente)</text>
+  <text x="80" y="275" font-family="Arial, sans-serif" font-size="22" fill="#ffcc00" font-weight="700">+ banner 60x80 300g</text>
+  <text x="80" y="330" font-family="Arial, sans-serif" font-size="20" fill="#8888aa">Para aumentar suas vendas</text>
+  <rect x="80" y="370" width="200" height="60" rx="30" fill="#ffcc00"/>
+  <text x="180" y="408" font-family="Arial, sans-serif" font-size="22" font-weight="900" fill="#06070d" text-anchor="middle">R$ 157,50</text>
+</svg>

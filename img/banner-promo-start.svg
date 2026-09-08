@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 480">
+  <defs>
+    <linearGradient id="bg7" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#06070d"/>
+      <stop offset="100%" style="stop-color:#1a0a0a"/>
+    </linearGradient>
+    <linearGradient id="fire" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#ff4d4d"/>
+      <stop offset="100%" style="stop-color:#ffcc00"/>
+    </linearGradient>
+  </defs>
+  <rect width="1080" height="480" fill="url(#bg7)"/>
+  <circle cx="900" cy="120" r="200" fill="#ff4d4d" opacity="0.04"/>
+  <circle cx="200" cy="400" r="150" fill="#ffcc00" opacity="0.04"/>
+  <rect x="80" y="60" width="200" height="60" rx="30" fill="url(#fire)"/>
+  <text x="180" y="100" font-family="Arial, sans-serif" font-size="24" font-weight="900" fill="#06070d" text-anchor="middle">🔥 PROMO!</text>
+  <text x="80" y="180" font-family="Arial, sans-serif" font-size="52" font-weight="900" fill="#ffffff">PROMO Start</text>
+  <text x="80" y="240" font-family="Arial, sans-serif" font-size="22" fill="#ffcc00" font-weight="700">500 panfletos 10x14 (Só Frente)</text>
+  <text x="80" y="275" font-family="Arial, sans-serif" font-size="22" fill="#ffcc00" font-weight="700">+ 500 Cartões 9x5 (Só Frente)</text>
+  <text x="80" y="330" font-family="Arial, sans-serif" font-size="20" fill="#8888aa">Para esquentar suas vendas</text>
+  <rect x="80" y="370" width="200" height="60" rx="30" fill="#ff4d4d"/>
+  <text x="180" y="408" font-family="Arial, sans-serif" font-size="22" font-weight="900" fill="#ffffff" text-anchor="middle">R$ 223,90</text>
+</svg>
