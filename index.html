@@ -959,7 +959,7 @@ function apply(){
   else if(ord==='codigo') LISTA.sort((a,b)=>a.c.localeCompare(b.c));
   else if(ord==='preco_asc') LISTA.sort((a,b)=>a.venda-b.venda);
   else if(ord==='preco_desc') LISTA.sort((a,b)=>b.venda-a.venda);
-  else LISTA.sort((a,b)=>a.cat.localeCompare(b.cat)||a.t.localeCompare(b.t));
+  else LISTA.sort((a,b)=>a.cat.localeCompare(b.cat)||(PRODUTOS.indexOf(a)-PRODUTOS.indexOf(b)));
   PAGINA = 1;
   render();
 }
