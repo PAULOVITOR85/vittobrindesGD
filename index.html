@@ -603,7 +603,7 @@
         <img src="img/banner-promo-start.svg" alt="Promo Start">
       </div>
 
-      <div class="carousel-slide" onclick="navGo('Promoção')" style="cursor:pointer">
+      <div class="carousel-slide" onclick="abrirProdutoPorCodigo('DIVULGAJA')" style="cursor:pointer">
         <img src="img/banner-divulgaja.svg" alt="DivulgaJÁ">
       </div>
 
@@ -1053,6 +1053,10 @@ function fecharSidebar(){
   const btn = document.getElementById('menu-btn');
   sb.classList.remove('open');
   btn.classList.remove('active');
+}
+function abrirProdutoPorCodigo(codigo){
+  const idx = PRODUTOS.findIndex(p => p.c === codigo);
+  if(idx >= 0) abrirPedido(idx);
 }
 function sincNavCats(){
   const v = document.getElementById('categoria').value;
