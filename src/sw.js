@@ -3,11 +3,11 @@ const CACHE = 'vitto-gd-v3';
 const CORE = [
   './',
   './index.html',
-  './produtos.js',
+  '../data/produtos.js',
   './manifest.json',
-  './img/icon-192.png',
-  './img/icon-512.png',
-  './img/icon-maskable-512.png'
+  '../img/icon-192.png',
+  '../img/icon-512.png',
+  '../img/icon-maskable-512.png'
 ];
 
 self.addEventListener('install', (e) => {

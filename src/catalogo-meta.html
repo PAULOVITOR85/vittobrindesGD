@@ -9,7 +9,7 @@
 <p>Gera o CSV usando o mesmo <code>produtos.js</code> do site. O modo recomendado seleciona exatamente 50 produtos comerciais, distribui a vitrine entre categorias e elimina títulos repetidos.</p>
 <div class="bar"><label>Modo <select id="modo"><option value="whatsapp50">WhatsApp — 50 produtos principais</option><option value="principais">Consolidado — sem títulos repetidos</option><option value="todos">Todos os produtos</option></select></label><button onclick="baixar()">Baixar CSV</button></div>
 <p id="res" class="ok"></p><div id="preview"></div>
-<script src="produtos.js"></script><script>
+<script src="../data/produtos.js"></script><script>
 const SITE='https://paulovitor85.github.io/vittobrindesGD/';
 function clean(v){return String(v??'').replace(/\s+/g,' ').trim()}
 function csv(v){v=clean(v);return '"'+v.replace(/"/g,'""')+'"'}
