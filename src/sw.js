@@ -1,5 +1,5 @@
 /* VITTO GD - Service Worker */
-const CACHE = 'vitto-gd-v3';
+const CACHE = 'vitto-gd-v4';
 const CORE = [
   './',
   './index.html',
@@ -28,7 +28,6 @@ self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  if (url.origin !== location.origin) return;
 
   // Navegação: rede primeiro, cai pro cache offline
   if (req.mode === 'navigate') {
@@ -40,6 +39,23 @@ self.addEventListener('fetch', (e) => {
           return res;
         })
         .catch(() => caches.match('./index.html'))
+    );
+    return;
+  }
+
+  // Imagens externas (produtos): cache-first
+  if (url.origin !== location.origin && /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(url.pathname)) {
+    e.respondWith(
+      caches.match(req).then((hit) => {
+        if (hit) return hit;
+        return fetch(req).then((res) => {
+          if (res && res.status === 200) {
+            const copy = res.clone();
+            caches.open(CACHE).then((c) => c.put(req, copy));
+          }
+          return res;
+        }).catch(() => new Response('', { status: 408 }));
+      })
     );
     return;
   }
