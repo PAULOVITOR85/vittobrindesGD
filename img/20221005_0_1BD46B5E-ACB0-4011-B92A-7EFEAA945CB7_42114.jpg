@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-Br">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Erro!</title>
+
+    <link href='https://www.graficadorevendedor.com.br/css/font-awesome.min.css' rel='stylesheet'>
+    <link href='https://www.graficadorevendedor.com.br/css/jquery-ui.min.css' rel='stylesheet'>
+    <link href='https://www.graficadorevendedor.com.br/css/app.css' rel='stylesheet'>
+    <link href='https://www.graficadorevendedor.com.br/loja/css/style.css' rel='stylesheet'>
+    <link href='https://www.graficadorevendedor.com.br/loja/css/variaveis-loja.css' rel='stylesheet'>
+    <link href='https://www.graficadorevendedor.com.br/loja/css/variaveis-carrinho.css' rel='stylesheet'>
+    <link href='https://www.graficadorevendedor.com.br/loja/css/variaveis-pagamento.css' rel='stylesheet'>
+    <link href='https://www.graficadorevendedor.com.br/css/font-awesome.min.css' rel='stylesheet'>
+    <link href='https://www.graficadorevendedor.com.br/css/erro.template.css' rel='stylesheet'>
+
+</head>
+
+<body style="background-color: white;">
+
+<div class="container-fluid text-center">
+    <div class="col-12" style="margin-top: 35px">
+        <div><img src="https://www.graficadorevendedor.com.br/storage/logos/logosistema.png" class="logo"></div>
+    </div>
+    <div class="offset-2 col-8" style="margin-top: 35px">
+        <hr>
+    </div>
+    <div class="col-12">
+        <h3 style="margin-top: 35px; color: #ccc; font-weight: 200;">Página não encontrada!</h3>
+    </div>
+    <div class="offset-2 col-8">
+        <hr>
+    </div>
+    <form class="form-group" style="display: inline-block; max-width: 600px;" id="frm_newsletter" method="GET" style="margin-top: 35px">
+        <label for="email-newsletter" class="sg-cor-primaria cor-texto-container">
+            Assine nossa newsletter e fique sempre por dentro das novidades
+        </label>
+        <div class="row">
+            <div class="col-md-12 bugfix">
+                <div class="col-xs-12 col-md-5" style="padding:5px">
+                    <input type="text" name = "nome_newsletter" id="nome_newsletter" placeholder="Nome" class="form-control">
+                </div>
+                <div class="col-xs-12 col-md-6" style="padding:5px">
+                    <input type="email" name = "email_newsletter" id="email_newsletter" placeholder="Email" class="form-control">
+                </div>
+                <div class="col-md-1 PaddingBugfix">
+                    <button type="button" id="submit_newsletter" class="btn sg-botao" style="margin-left: 10px">Assinar</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Scripts -->
+<script src='https://www.graficadorevendedor.com.br/js/app.js'></script>
+<script src='https://www.graficadorevendedor.com.br/js/main.js'></script>
+<script src='https://www.graficadorevendedor.com.br/js/init.js'></script>
+<script src='https://www.graficadorevendedor.com.br/loja/js/global.js'></script>
+<script src='https://www.graficadorevendedor.com.br/js/bsal.js'></script>
+<script src='https://www.graficadorevendedor.com.br/js/bootstrap-filestyle.min.js'></script>
+
+
+</body>
+</html>

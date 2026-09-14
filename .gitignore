@@ -2,16 +2,9 @@
 # VITTO GD - .gitignore
 # ============================================
 
-# ---------- Imagens (manter leve no Git) ----------
-# Imagens de produto (grandes, podem ser re-baixadas)
-img/*.jpg
-img/*.png
-img/*.webp
-
-# Manter apenas SVGs e ícones PWA
-!img/*.svg
-!img/icon-*.png
-!img/icon-maskable-*.png
+# ---------- Imagens ----------
+# Todas as imagens são rastreadas (necessárias para o site funcionar)
+# NÃO adicionar img/*.jpg, img/*.png, img/*.webp ao gitignore
 
 # ---------- Backups locais ----------
 backups/
