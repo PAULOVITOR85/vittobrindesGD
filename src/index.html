@@ -897,7 +897,7 @@ function card(p){
         <div class="lbl">${p.cfg.packprices ? 'A partir de (un)' : 'A partir de'}</div>
         <div class="val">R$ ${fmt(p.venda)}</div>
         ${p.cfg.packprices ? '<div class="chip">Quantidades: ' + Object.keys(p.cfg.packprices).join(', ') + ' un</div>' : ''}
-        ${p.cfg.tamlist ? '<div class="chip">Tamanhos padrão · folha A3</div>' : (p.cfg.custom ? '<div class="chip">Sob medida · digite o tamanho da arte (cm)</div>' : (p.cfg.fixed && p.cfg.unlbl ? '<div class="chip">Tamanho fixo · ' + p.cfg.unlbl + '</div>' : (p.cfg.fixed ? '<div class="chip">Tamanho fixo · preço por m²</div>' : (p.cfg.tp==='cm2' && p.cfg.fdp ? '<div class="chip">Sob medida · preço por folha A3</div>' : (p.cfg.tp==='m2' || (p.cfg.tp==='cm2' && p.cfg.m2) ? '<div class="chip">Sob medida · preço por m²</div>' : (p.cfg.tp==='cm2' ? '<div class="chip">Sob medida · preço por cm²</div>' : (p.cfg.tp==='m' ? '<div class="chip">Por metro linear · largura fixa</div>' : '')))))))}
+        ${p.cfg.tamlist ? '<div class="chip">Tamanhos padrão · ' + (p.cfg.unlbl || 'folha') + '</div>' : (p.cfg.custom ? '<div class="chip">Sob medida · digite o tamanho da arte (cm)</div>' : (p.cfg.fixed && p.cfg.unlbl ? '<div class="chip">Tamanho fixo · ' + p.cfg.unlbl + '</div>' : (p.cfg.fixed ? '<div class="chip">Tamanho fixo · preço por m²</div>' : (p.cfg.tp==='cm2' && p.cfg.fdp ? '<div class="chip">Sob medida · preço por ' + (p.cfg.unlbl || 'folha') + '</div>' : (p.cfg.tp==='m2' || (p.cfg.tp==='cm2' && p.cfg.m2) ? '<div class="chip">Sob medida · preço por m²</div>' : (p.cfg.tp==='cm2' ? '<div class="chip">Sob medida · preço por cm²</div>' : (p.cfg.tp==='m' ? '<div class="chip">Por metro linear · largura fixa</div>' : '')))))))}
         <div class="prazo">Produção: ${p.prazo || 'consulte'}${p.prazod ? ` · previsão ${dataEntrega(p.prazod)}` : ''}</div>
         <button class="btn-pedir" ${p.esgotado ? 'disabled' : `onclick="event.stopPropagation(); abrirPedido(${p.i})"`}>${p.esgotado ? 'Indisponível' : '🛒 Adicionar'}</button>
       </div>
@@ -1453,7 +1453,8 @@ function iniciar(){
               cI.value = 1;
             } else if(C.tp === 'cm2'){
               document.getElementById('m-dimuni').textContent = 'cm';
-              document.getElementById('m-dimlbl').textContent = C.custom ? 'Medida da arte — largura × comprimento em cm (calcula quantas peças cabem na folha A3)' : (C.fdp ? 'Medida do adesivo — largura × comprimento em cm (valor por folha A3)' : 'Tamanho — largura × comprimento em cm');
+              const folhaLabel = C.unlbl || (C.folha ? 'folha' : 'A3');
+              document.getElementById('m-dimlbl').textContent = C.custom ? 'Medida da arte — largura × comprimento em cm (calcula quantas peças cabem na ' + folhaLabel + ')' : (C.fdp ? 'Medida do adesivo — largura × comprimento em cm (valor por ' + folhaLabel + ')' : 'Tamanho — largura × comprimento em cm');
               lI.value = 10;
               cI.value = 10;
             } else {
@@ -1686,7 +1687,8 @@ function iniciar(){
           }
           const ok = tamlist ? (r.pcArea > 0 && r.porFolha > 0) : (C.custom ? (r.pcArea > 0 && r.porFolha > 0) : ((C.tp !== 'm2' && C.tp !== 'cm2' && C.tp !== 'm') || r.area > 0));
           const tot = ok && r.venda > 0 ? r.venda : ATUAL.venda * qtd;
-          const rot = C.custom ? 'Preço (folha A3)' : (C.unlbl ? 'Preço (' + C.unlbl + ')' : (C.tp === 'm2' || C.tp === 'm' || (C.tp === 'cm2' && C.m2) ? 'Preço (m²)' : (C.tp === 'cm2' ? 'Preço (cm²)' : 'Preço (unidade)')));
+          const folhaLbl = C.unlbl || 'folha';
+          const rot = C.custom ? 'Preço (' + folhaLbl + ')' : (C.unlbl ? 'Preço (' + C.unlbl + ')' : (C.tp === 'm2' || C.tp === 'm' || (C.tp === 'cm2' && C.m2) ? 'Preço (m²)' : (C.tp === 'cm2' ? 'Preço (cm²)' : 'Preço (unidade)')));
           if(C.packprices && qtd > 1){
             document.getElementById('m-lblpreco').textContent = 'Preço por unidade';
             document.getElementById('m-uni').textContent = fmt(tot / qtd);
@@ -2007,7 +2009,7 @@ function iniciar(){
             msg += '🏷 Categoria: ' + it.p.cat + '\n';
             it.linhas.forEach(function(l){ msg += l[0] + ' ' + l[1] + ': ' + l[2] + '\n'; });
             if(it.snap.medidas) msg += '📝 Detalhes: ' + it.snap.medidas + '\n';
-            const rot = C.custom ? 'folha A3' : (C.unlbl ? C.unlbl : (C.tp === 'm2' || C.tp === 'm' || (C.tp === 'cm2' && C.m2) ? 'm²' : (C.tp === 'cm2' ? 'cm²' : 'unidade')));
+            const rot = C.custom ? (C.unlbl || 'folha') : (C.unlbl ? C.unlbl : (C.tp === 'm2' || C.tp === 'm' || (C.tp === 'cm2' && C.m2) ? 'm²' : (C.tp === 'cm2' ? 'cm²' : 'unidade')));
             msg += '🔢 Quantidade: ' + it.qtd + ' ' + rot + '\n';
             msg += '💰 Total do item: R$ ' + fmt(it.total) + '\n';
             msg += '📅 Prazo: ' + (it.p.prazo || 'a combinar');
