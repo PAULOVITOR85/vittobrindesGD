@@ -1425,9 +1425,11 @@ function calcPreco(C, larg, comp, qtd){
             qsel.value = String(packs[0]);
           }
           const folha = !pecas && soPacotes;
+          const useFolhaMode = !!(C.fdp || C.por_cm2);
           document.getElementById('pkbtn').disabled = !packs.length;
           document.getElementById('unbtn').style.display = (soPacotes || soPackprices) ? 'none' : '';
           mudarModo((soPacotes || soPackprices) ? 'pk' : 'un');
+          if(useFolhaMode) mudarModo('un');
           const tl = document.getElementById('m-tamlist');
           if(tamlist || C.fdp || C.por_cm2){
             tl.style.display = '';
@@ -1546,7 +1548,8 @@ function calcPreco(C, larg, comp, qtd){
           document.getElementById('unbtn').classList.toggle('on', un);
           document.getElementById('pkbtn').classList.toggle('on', !un);
           document.getElementById('qrow').style.display = (un && !soPackprices) ? '' : 'none';
-          document.querySelectorAll('.quni').forEach(el => el.textContent = un ? (C.batch ? 'lotes' : (C.unlbl ? C.unlbl : 'unidades')) : 'quantidades');
+          const folhaLabel = C.unlbl || 'folhas';
+          document.querySelectorAll('.quni').forEach(el => el.textContent = un ? (C.batch ? 'lotes' : (C.unlbl ? C.unlbl : 'unidades')) : ((C.fdp || C.por_cm2) ? folhaLabel : 'quantidades'));
           qsel.style.display = (!un && soPackprices) ? '' : 'none';
           recalcular();
         }
@@ -1634,17 +1637,17 @@ function calcPreco(C, larg, comp, qtd){
             const pp = precoFolha(C, q);
             return q + ' folha' + (q > 1 ? 's' : '') + ' · R$ ' + fmt(pp) + '/folha';
           } else if(isMedidaMode){
-            // Medida na folha
+            // Medida na folha: q = folhas escolhidas
             const larg = parseFloat(document.getElementById('m-largura').value) || 0;
             const comp = parseFloat(document.getElementById('m-comprimento').value) || 0;
             if(larg > 0 && comp > 0){
               const fL = (C.folha ? C.folha[0] : 0.297) * 100;
               const fW = (C.folha ? C.folha[1] : 0.42) * 100;
               const porFolha = encaixe(larg, comp, fL, fW);
-              const folhasNecessarias = porFolha > 0 ? Math.ceil(q / porFolha) : 0;
-              return q + ' peça' + (q > 1 ? 's' : '') + ' → ' + folhasNecessarias + ' folha' + (folhasNecessarias > 1 ? 's' : '');
+              const totalPecas = porFolha * q;
+              return q + ' folha' + (q > 1 ? 's' : '') + ' → ' + totalPecas + ' peça' + (totalPecas > 1 ? 's' : '');
             }
-            return q + ' peça' + (q > 1 ? 's' : '');
+            return q + ' folha' + (q > 1 ? 's' : '');
           } else if(MODO === 'pk'){
             if(tamlist) return q + ' peça' + (q > 1 ? 's' : '') + descTamSel(C);
             if(C.unlbl) return q + ' ' + qunitLabel(C, q) + (C.fdp ? ' · R$ ' + fmt(precoFolha(C, q)) + '/folha' : '');
@@ -1677,7 +1680,32 @@ function calcPreco(C, larg, comp, qtd){
           const r = calcPreco(C, larg, comp, qtd);
           const tamlist = C.tamlist && C.tamlist.length;
           const dimdesc = document.getElementById('m-dimdesc');
-          if(tamlist){
+          const sel = document.getElementById('m-tamsel');
+          const selectedTam = sel ? parseInt(sel.value) : 0;
+          const isFolhaMode = selectedTam === -2;
+          const isMedidaMode = selectedTam === -1;
+          const folhaLabel = C.unlbl || (C.folha ? 'folha' : 'A3');
+          if(isFolhaMode){
+            dimdesc.className = 'tamdesc ok';
+            dimdesc.textContent = qtd + ' ' + folhaLabel + (qtd > 1 ? 's' : '') + ' · ' + (ATUAL.prazo || 'consulte');
+          } else if(isMedidaMode){
+            const L = parseFloat(larg) || 0;
+            const W = parseFloat(comp) || 0;
+            if(L > 0 && W > 0 && r.porFolha > 0){
+              const totPecas = r.porFolha * qtd;
+              dimdesc.className = 'tamdesc ok';
+              dimdesc.textContent = fmtDimBR(L) + ' × ' + fmtDimBR(W) + ' cm · ' +
+                r.porFolha + ' peça' + (r.porFolha > 1 ? 's' : '') + ' por ' + folhaLabel + ' · ' +
+                qtd + ' ' + folhaLabel + (qtd > 1 ? 's' : '') + ' → ' +
+                totPecas + ' peça' + (totPecas > 1 ? 's' : '') + ' · ' + (ATUAL.prazo || 'consulte');
+            } else if(L > 0 && W > 0){
+              dimdesc.className = 'tamdesc warn';
+              dimdesc.textContent = 'Este tamanho não cabe na ' + folhaLabel + ' (' + fmtDimBR(fL) + ' × ' + fmtDimBR(fW) + ' cm).';
+            } else {
+              dimdesc.className = 'tamdesc warn';
+              dimdesc.textContent = 'Informe a largura e o comprimento (cm) da arte.';
+            }
+          } else if(tamlist){
             const sel = document.getElementById('m-tamsel');
             const oi = sel ? parseInt(sel.value) : 0;
             const custom = oi === -1;
@@ -1688,11 +1716,11 @@ function calcPreco(C, larg, comp, qtd){
             if(L > 0 && W > 0 && r.porFolha > 0){
               td.className = 'tamdesc ok';
               td.textContent = fmtDimBR(L) + ' × ' + fmtDimBR(W) + ' cm · ' +
-                r.porFolha + ' peça' + (r.porFolha > 1 ? 's' : '') + ' por folha A3 · ' +
-                r.folhas + ' folha' + (r.folhas > 1 ? 's' : '') + ' · ' + (ATUAL.prazo || 'consulte');
+                r.porFolha + ' peça' + (r.porFolha > 1 ? 's' : '') + ' por ' + folhaLabel + ' · ' +
+                r.folhas + ' ' + folhaLabel + (r.folhas > 1 ? 's' : '') + ' · ' + (ATUAL.prazo || 'consulte');
             } else if(custom && L > 0 && W > 0){
               td.className = 'tamdesc warn';
-              td.textContent = 'Este tamanho não cabe na folha A3 (' + fmtDimBR(C.folha ? C.folha[0] * 100 : 29.7) + ' × ' + fmtDimBR(C.folha ? C.folha[1] * 100 : 42) + ' cm).';
+              td.textContent = 'Este tamanho não cabe na ' + folhaLabel + ' (' + fmtDimBR(C.folha ? C.folha[0] * 100 : 29.7) + ' × ' + fmtDimBR(C.folha ? C.folha[1] * 100 : 42) + ' cm).';
             } else {
               td.className = 'tamdesc warn';
               td.textContent = custom ? 'Informe a largura e o comprimento (cm) para calcular o encaixe.' : '';
@@ -1712,15 +1740,15 @@ function calcPreco(C, larg, comp, qtd){
               const totFolhas = C.adesivos ? r.folhas : qtd;
               dimdesc.className = 'tamdesc ok';
               dimdesc.textContent = fmtDimBR(L) + ' × ' + fmtDimBR(W) + ' cm · ' +
-                r.porFolha + ' peça' + (r.porFolha > 1 ? 's' : '') + ' por folha A3 · total ' +
+                r.porFolha + ' peça' + (r.porFolha > 1 ? 's' : '') + ' por ' + folhaLabel + ' · total ' +
                 totPecas + ' ' + pn + (totPecas > 1 ? 's' : '') + ' em ' +
-                totFolhas + ' folha' + (totFolhas > 1 ? 's' : '') + ' · ' + (ATUAL.prazo || 'consulte');
+                totFolhas + ' ' + folhaLabel + (totFolhas > 1 ? 's' : '') + ' · ' + (ATUAL.prazo || 'consulte');
             } else if(L > 0 && W > 0){
               dimdesc.className = 'tamdesc warn';
-              dimdesc.textContent = 'Este tamanho não cabe na folha A3 (' + fmtDimBR(fL) + ' × ' + fmtDimBR(fW) + ' cm).';
+              dimdesc.textContent = 'Este tamanho não cabe na ' + folhaLabel + ' (' + fmtDimBR(fL) + ' × ' + fmtDimBR(fW) + ' cm).';
             } else {
               dimdesc.className = 'tamdesc warn';
-              dimdesc.textContent = 'Informe a largura e o comprimento (cm) da arte para calcular quantas peças cabem por folha.';
+              dimdesc.textContent = 'Informe a largura e o comprimento (cm) da arte para calcular quantas peças cabem por ' + folhaLabel + '.';
             }
           } else if(C.tp === 'm2' || C.tp === 'cm2' || C.tp === 'm'){
             if(r.area > 0){
