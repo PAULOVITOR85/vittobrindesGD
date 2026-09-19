@@ -1426,10 +1426,9 @@ function calcPreco(C, larg, comp, qtd){
           }
           const folha = !pecas && soPacotes;
           const useFolhaMode = !!(C.fdp || C.por_cm2);
-          document.getElementById('pkbtn').disabled = !packs.length;
-          document.getElementById('unbtn').style.display = (soPacotes || soPackprices) ? 'none' : '';
-          mudarModo((soPacotes || soPackprices) ? 'pk' : 'un');
-          if(useFolhaMode) mudarModo('un');
+          document.getElementById('pkbtn').style.display = useFolhaMode ? 'none' : '';
+          document.getElementById('unbtn').style.display = (soPacotes || soPackprices || useFolhaMode) ? 'none' : '';
+          mudarModo('un');
           const tl = document.getElementById('m-tamlist');
           if(tamlist || C.fdp || C.por_cm2){
             tl.style.display = '';
