@@ -1433,6 +1433,8 @@ function calcPreco(C, larg, comp, qtd){
           if(tamlist || C.fdp || C.por_cm2){
             tl.style.display = '';
             const tsel = document.getElementById('m-tamsel');
+            const tlLabel = tl.querySelector('label');
+            if(tlLabel) tlLabel.textContent = (C.fdp || C.por_cm2) ? 'Opção por folha ou tamanho' : 'Tamanho do recorte';
             let options = '';
             if(C.fdp) options += '<option value="-2">Comprar por folha</option>';
             if(C.por_cm2 || (C.tamlist && C.tamlist.length)) options += '<option value="-1">Medida na folha</option>';
