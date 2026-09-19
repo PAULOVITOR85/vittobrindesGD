@@ -1272,19 +1272,16 @@ function calcPreco(C, larg, comp, qtd){
                 base = 0;
               }
             } else if(selectedTam === -1 || (C.tp === 'cm2' && C.custom)){
-              // Tamanho personalizado: calcula encaixe na folha
+              // Medida na folha: calcula encaixe, quantidade = folhas
               larg = Number(larg) || 0; comp = Number(comp) || 0;
               const fL = (C.folha ? C.folha[0] : 0.297) * 100;
               const fW = (C.folha ? C.folha[1] : 0.42) * 100;
               area = C.area || (fL * fW / 10000);
               pcArea = larg > 0 && comp > 0 ? Math.round(larg * comp / 10000 * 1000000) / 1000000 : 0;
               porFolha = encaixe(larg, comp, fL, fW);
-              const n = Number(qtd) || 0;
-              folhas = C.adesivos
-                ? (porFolha > 0 ? Math.ceil(n / porFolha) : 0)
-                : n;
+              folhas = Number(qtd) || 0;
               const ppf = precoFolha(C, folhas);
-              base = (pcArea > 0 && porFolha > 0) ? ppf * folhas : 0;
+              base = ppf * folhas;
               puEff = ppf;
             } else if(C.tp === 'm2' || C.tp === 'cm2' || C.tp === 'm'){
               larg = Number(larg) || 0; comp = Number(comp) || 0;
@@ -1432,19 +1429,19 @@ function calcPreco(C, larg, comp, qtd){
           document.getElementById('unbtn').style.display = (soPacotes || soPackprices) ? 'none' : '';
           mudarModo((soPacotes || soPackprices) ? 'pk' : 'un');
           const tl = document.getElementById('m-tamlist');
-          if(tamlist || C.fdp){
+          if(tamlist || C.fdp || C.por_cm2){
             tl.style.display = '';
             const tsel = document.getElementById('m-tamsel');
             let options = '';
             if(C.fdp) options += '<option value="-2">Comprar por folha</option>';
+            if(C.por_cm2 || (C.tamlist && C.tamlist.length)) options += '<option value="-1">Medida na folha</option>';
             if(C.tamlist && C.tamlist.length){
               options += C.tamlist.map((t, i) =>
                 '<option value="' + i + '">' + fmtDimBR(t[0]) + ' × ' + fmtDimBR(t[1]) + ' cm</option>'
               ).join('');
             }
-            if(C.por_cm2) options += '<option value="-1">Por cm² (personalizado)</option>';
             tsel.innerHTML = options;
-            tsel.value = C.fdp ? '-2' : '0';
+            tsel.value = C.fdp ? '-2' : '-1';
           } else {
             tl.style.display = 'none';
           }
@@ -1454,10 +1451,10 @@ function calcPreco(C, larg, comp, qtd){
           const tsel = document.getElementById('m-tamsel');
           const selectedTam = tsel ? parseInt(tsel.value) : 0;
           const isFolhaMode = selectedTam === -2;
-          const isCustomMode = selectedTam === -1;
-          if(C.fixed || isFolhaMode || (C.fdp && !C.custom && !tamlist)){
+          const isMedidaMode = selectedTam === -1;
+          if(C.fixed || isFolhaMode){
             dim.style.display = 'none';
-          } else if(C.tp === 'm2' || C.tp === 'cm2' || C.tp === 'm'){
+          } else if(isMedidaMode || (C.tp === 'cm2' && C.custom)){
             dim.style.display = '';
             lI.readOnly = false;
             lI.oninput = recalcular;
@@ -1471,8 +1468,8 @@ function calcPreco(C, larg, comp, qtd){
             } else if(C.tp === 'cm2'){
               document.getElementById('m-dimuni').textContent = 'cm';
               const folhaLabel = C.unlbl || (C.folha ? 'folha' : 'A3');
-              if(isCustomMode){
-                document.getElementById('m-dimlbl').textContent = 'Medida da arte — largura × comprimento em cm (calcula quantas peças cabem na ' + folhaLabel + ')';
+              if(isMedidaMode){
+                document.getElementById('m-dimlbl').textContent = 'Medida da arte — largura × comprimento em cm (calcula quantas cabem na ' + folhaLabel + ')';
               } else {
                 document.getElementById('m-dimlbl').textContent = 'Medida do adesivo — largura × comprimento em cm (valor por ' + folhaLabel + ')';
               }
@@ -1509,18 +1506,18 @@ function calcPreco(C, larg, comp, qtd){
           const C = ATUAL.cfg || {};
           const sel = document.getElementById('m-tamsel');
           const val = sel ? sel.value : '0';
-          const custom = val === '-1';
           const folha = val === '-2';
+          const medida = val === '-1';
           const dim = document.getElementById('m-dim');
           const folhaLabel = C.unlbl || (C.folha ? 'folha' : 'A3');
           if(folha){
             // Comprar por folha: oculta dimensões
             dim.style.display = 'none';
-          } else if(custom || (C.tp === 'cm2' && C.custom)){
-            // Tamanho personalizado: mostra dimensões
+          } else if(medida){
+            // Medida na folha: mostra dimensões
             dim.style.display = '';
             document.getElementById('m-dimuni').textContent = 'cm';
-            document.getElementById('m-dimlbl').textContent = 'Medida da arte — largura × comprimento em cm (calcula quantas peças cabem na ' + folhaLabel + ')';
+            document.getElementById('m-dimlbl').textContent = 'Medida da arte — largura × comprimento em cm (calcula quantas cabem na ' + folhaLabel + ')';
             const lI = document.getElementById('m-largura');
             const cI = document.getElementById('m-comprimento');
             lI.readOnly = false;
@@ -1528,8 +1525,6 @@ function calcPreco(C, larg, comp, qtd){
             cI.oninput = recalcular;
             lI.value = 10;
             cI.value = 10;
-          } else if(C.tamlist && C.tamlist.length){
-            dim.style.display = 'none';
           } else {
             dim.style.display = 'none';
           }
@@ -1599,9 +1594,20 @@ function calcPreco(C, larg, comp, qtd){
           const sel = document.getElementById('m-tamsel');
           const oi = sel ? parseInt(sel.value) : 0;
           let L = 0, W = 0;
-          if(oi === -1){
+          if(oi === -2){
+            // Comprar por folha
+            return '';
+          } else if(oi === -1){
+            // Medida na folha
             L = parseFloat(document.getElementById('m-largura').value) || 0;
             W = parseFloat(document.getElementById('m-comprimento').value) || 0;
+            if(L > 0 && W > 0){
+              const fL = (C.folha ? C.folha[0] : 0.297) * 100;
+              const fW = (C.folha ? C.folha[1] : 0.42) * 100;
+              const porFolha = encaixe(L, W, fL, fW);
+              return ' de ' + fmtDimBR(L) + ' × ' + fmtDimBR(W) + ' cm (' + porFolha + ' por folha)';
+            }
+            return '';
           } else if(C.tamlist && C.tamlist[oi]){
             L = C.tamlist[oi][0]; W = C.tamlist[oi][1];
           }
@@ -1618,7 +1624,28 @@ function calcPreco(C, larg, comp, qtd){
           const q = lerQtd();
           const C = ATUAL.cfg || {};
           const tamlist = C.tamlist && C.tamlist.length;
-          if(MODO === 'pk'){
+          const sel = document.getElementById('m-tamsel');
+          const selectedTam = sel ? parseInt(sel.value) : 0;
+          const isFolhaMode = selectedTam === -2;
+          const isMedidaMode = selectedTam === -1;
+          
+          if(isFolhaMode){
+            // Comprar por folha
+            const pp = precoFolha(C, q);
+            return q + ' folha' + (q > 1 ? 's' : '') + ' · R$ ' + fmt(pp) + '/folha';
+          } else if(isMedidaMode){
+            // Medida na folha
+            const larg = parseFloat(document.getElementById('m-largura').value) || 0;
+            const comp = parseFloat(document.getElementById('m-comprimento').value) || 0;
+            if(larg > 0 && comp > 0){
+              const fL = (C.folha ? C.folha[0] : 0.297) * 100;
+              const fW = (C.folha ? C.folha[1] : 0.42) * 100;
+              const porFolha = encaixe(larg, comp, fL, fW);
+              const folhasNecessarias = porFolha > 0 ? Math.ceil(q / porFolha) : 0;
+              return q + ' peça' + (q > 1 ? 's' : '') + ' → ' + folhasNecessarias + ' folha' + (folhasNecessarias > 1 ? 's' : '');
+            }
+            return q + ' peça' + (q > 1 ? 's' : '');
+          } else if(MODO === 'pk'){
             if(tamlist) return q + ' peça' + (q > 1 ? 's' : '') + descTamSel(C);
             if(C.unlbl) return q + ' ' + qunitLabel(C, q) + (C.fdp ? ' · R$ ' + fmt(precoFolha(C, q)) + '/folha' : '');
             if(C.pecas) return q + ' unidade' + (q > 1 ? 's' : '');
