@@ -1438,7 +1438,7 @@ function iniciar(){
           const dim = document.getElementById('m-dim');
           const lI = document.getElementById('m-largura');
           const cI = document.getElementById('m-comprimento');
-          if(C.fixed){
+          if(C.fixed || (C.fdp && !C.custom && !tamlist)){
             dim.style.display = 'none';
           } else if(C.tp === 'm2' || C.tp === 'cm2' || C.tp === 'm'){
             dim.style.display = '';
