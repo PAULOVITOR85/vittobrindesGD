@@ -258,6 +258,7 @@
 
   /* Destaques (mais procurados) */
   .dest{padding:32px 0 8px}
+  .cat-carousel-section{padding:16px 0 8px}
   .sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:16px}
   .sec-head h3{font-size:20px;font-weight:700;color:var(--branco);letter-spacing:-.3px}
   .sec-head a{color:var(--destaque);font-size:13px;font-weight:600;text-decoration:none;transition:opacity .2s}
@@ -694,6 +695,20 @@
     </div>
   </div>
 </section>
+<section class="cat-carousel-section">
+  <div class="wrap">
+    <div class="sec-head">
+      <h3>Impressão Rápida</h3>
+      <a href="#catalogo" onclick="navGo('Impressão Rápida')">Ver todos →</a>
+    </div>
+    <div class="carousel" id="carousel-rapida">
+      <div class="carousel-track" id="carousel-rapida-track"></div>
+      <button class="carousel-arrow prev" onclick="carouselRapidaMove(-1)" aria-label="Anterior">‹</button>
+      <button class="carousel-arrow next" onclick="carouselRapidaMove(1)" aria-label="Próximo">›</button>
+      <div class="carousel-nav" id="carousel-rapida-nav"></div>
+    </div>
+  </div>
+</section>
 <section class="catalogo" id="catalogo">
   <div class="wrap">
     <div class="cats" id="cats"></div>
@@ -1109,7 +1124,7 @@ let carouselIdx = 0;
 let carouselTimer = null;
 function carouselGo(i){
   const track = document.getElementById('carousel-track');
-  const dots = document.querySelectorAll('.carousel-dot');
+  const dots = document.querySelectorAll('#carousel-nav .carousel-dot');
   if(!track || !dots.length) return;
   const total = dots.length;
   carouselIdx = ((i % total) + total) % total;
@@ -1119,6 +1134,41 @@ function carouselGo(i){
   carouselTimer = setInterval(() => carouselMove(1), 5000);
 }
 function carouselMove(d){ carouselGo(carouselIdx + d); }
+
+let rapidaIdx = 0;
+let rapidaTimer = null;
+function carouselRapidaGo(i){
+  const track = document.getElementById('carousel-rapida-track');
+  const dots = document.querySelectorAll('#carousel-rapida-nav .carousel-dot');
+  if(!track || !dots.length) return;
+  const total = dots.length;
+  rapidaIdx = ((i % total) + total) % total;
+  track.style.transform = 'translateX(-' + (rapidaIdx * 100) + '%)';
+  dots.forEach((d, di) => d.classList.toggle('active', di === rapidaIdx));
+  clearInterval(rapidaTimer);
+  rapidaTimer = setInterval(() => carouselRapidaMove(1), 4000);
+}
+function carouselRapidaMove(d){ carouselRapidaGo(rapidaIdx + d); }
+function renderCarouselRapida(){
+  const track = document.getElementById('carousel-rapida-track');
+  const nav = document.getElementById('carousel-rapida-nav');
+  if(!track || !nav) return;
+  const rapidas = PRODUTOS.filter(p => p.cat === 'Impressão Rápida' && p.img);
+  if(!rapidas.length){ track.closest('.carousel').style.display = 'none'; return; }
+  track.innerHTML = rapidas.map(p =>
+    '<div class="carousel-slide" onclick="abrirProdutoPorCodigo(\'' + p.c + '\')" style="cursor:pointer">' +
+    '<img src="' + p.img + '" alt="' + p.t + '" loading="lazy">' +
+    '</div>'
+  ).join('');
+  nav.innerHTML = rapidas.map((_, i) =>
+    '<button class="carousel-dot' + (i === 0 ? ' active' : '') + '" onclick="carouselRapidaGo(' + i + ')"></button>'
+  ).join('');
+  rapidaIdx = 0;
+  if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    rapidaTimer = setInterval(() => carouselRapidaMove(1), 4000);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
     carouselTimer = setInterval(() => carouselMove(1), 5000);
@@ -1132,6 +1182,14 @@ document.addEventListener('DOMContentLoaded', () => {
   el.addEventListener('touchstart', e => { sx=e.touches[0].clientX; sy=e.touches[0].clientY; dx=0; }, {passive:true});
   el.addEventListener('touchmove', e => { dx=e.touches[0].clientX-sx; }, {passive:true});
   el.addEventListener('touchend', () => { if(Math.abs(dx)>40){ carouselMove(dx<0?1:-1); } });
+}());
+(function(){
+  const el = document.getElementById('carousel-rapida');
+  if(!el) return;
+  let sx=0, dx=0;
+  el.addEventListener('touchstart', e => { sx=e.touches[0].clientX; dx=0; }, {passive:true});
+  el.addEventListener('touchmove', e => { dx=e.touches[0].clientX-sx; }, {passive:true});
+  el.addEventListener('touchend', () => { if(Math.abs(dx)>40){ carouselRapidaMove(dx<0?1:-1); } });
 }());
 
 (function(){
@@ -1178,6 +1236,7 @@ function iniciar(){
   renderNavCats();
   renderCats();
   renderDestaques();
+  renderCarouselRapida();
   apply();
 }
         if(typeof window.PRODUTOS === 'undefined' || !window.PRODUTOS.length){
