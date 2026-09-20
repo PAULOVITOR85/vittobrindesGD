@@ -598,39 +598,39 @@
     <div class="carousel-track" id="carousel-track">
 
       <div class="carousel-slide" onclick="navGo('Promoção')" style="cursor:pointer">
-        <img src="../img/banner-promocao.webp" alt="Promoção do mês" fetchpriority="high">
+        <img src="../img/banner-promocao.svg" alt="Promoção do mês" fetchpriority="high">
       </div>
 
       <div class="carousel-slide" onclick="navGo('Cartão de Visita')" style="cursor:pointer">
-        <img src="../img/banner-cartao-visita.webp" alt="Cartões de Visita">
+        <img data-src="../img/banner-cartao-visita.svg" alt="Cartões de Visita">
       </div>
 
       <div class="carousel-slide" onclick="navGo('')" style="cursor:pointer">
-        <img src="../img/banner-entrega.webp" alt="Entrega">
+        <img data-src="../img/banner-entrega.svg" alt="Entrega">
       </div>
 
       <div class="carousel-slide" onclick="navGo('Flyer+Panfleto')" style="cursor:pointer">
-        <img src="../img/banner-panfleto.webp" alt="Panfleto">
+        <img data-src="../img/banner-panfleto.svg" alt="Panfleto">
       </div>
 
       <div class="carousel-slide" onclick="navGo('Banner, Lona e Faixa')" style="cursor:pointer">
-        <img src="../img/banner-lona.webp" alt="Banner e Lona">
+        <img data-src="../img/banner-lona.svg" alt="Banner e Lona">
       </div>
 
       <div class="carousel-slide" onclick="navGo('Adesivos')" style="cursor:pointer">
-        <img src="../img/banner-adesivos.webp" alt="Adesivos">
+        <img data-src="../img/banner-adesivos.svg" alt="Adesivos">
       </div>
 
       <div class="carousel-slide" onclick="navGo('Promoção')" style="cursor:pointer">
-        <img src="../img/banner-promo-start.webp" alt="Promo Start">
+        <img data-src="../img/banner-promo-start.svg" alt="Promo Start">
       </div>
 
       <div class="carousel-slide" onclick="abrirProdutoPorCodigo('DIVULGAJA')" style="cursor:pointer">
-        <img src="../img/banner-divulgaja.webp" alt="DivulgaJÁ">
+        <img data-src="../img/banner-divulgaja.svg" alt="DivulgaJÁ">
       </div>
 
       <div class="carousel-slide" onclick="navGo('Impressão Rápida')" style="cursor:pointer">
-        <img src="../img/banner-impressao-rapida.webp" alt="Impressão Rápida">
+        <img data-src="../img/banner-impressao-rapida.svg" alt="Impressão Rápida">
       </div>
 
     </div>
@@ -1132,6 +1132,17 @@ function destScroll(d){
 
 let carouselIdx = 0;
 let carouselTimer = null;
+function carouselLazyLoad(i){
+  const track = document.getElementById('carousel-track');
+  if(!track) return;
+  const slides = track.querySelectorAll('.carousel-slide');
+  const total = slides.length;
+  [i-1, i, i+1, i+2].forEach(n => {
+    const idx = ((n % total) + total) % total;
+    const img = slides[idx].querySelector('img[data-src]');
+    if(img){ img.src = img.dataset.src; img.removeAttribute('data-src'); }
+  });
+}
 function carouselGo(i){
   const track = document.getElementById('carousel-track');
   const dots = document.querySelectorAll('#carousel-nav .carousel-dot');
@@ -1140,15 +1151,23 @@ function carouselGo(i){
   carouselIdx = ((i % total) + total) % total;
   track.style.transform = 'translateX(-' + (carouselIdx * 100) + '%)';
   dots.forEach((d, di) => d.classList.toggle('active', di === carouselIdx));
+  carouselLazyLoad(carouselIdx);
   clearInterval(carouselTimer);
   carouselTimer = setInterval(() => carouselMove(1), 5000);
 }
 function carouselMove(d){ carouselGo(carouselIdx + d); }
 
 document.addEventListener('DOMContentLoaded', () => {
+  carouselLazyLoad(0);
   if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
     carouselTimer = setInterval(() => carouselMove(1), 5000);
   }
+  setTimeout(() => {
+    document.querySelectorAll('.carousel-slide img[data-src]').forEach(img => {
+      img.src = img.dataset.src;
+      img.removeAttribute('data-src');
+    });
+  }, 1500);
 });
 
 (function(){

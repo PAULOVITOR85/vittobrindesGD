@@ -1,5 +1,5 @@
 /* VITTO GD - Service Worker */
-const CACHE = 'vitto-gd-v8';
+const CACHE = 'vitto-gd-v9';
 const CORE = [
   './',
   './index.html',
