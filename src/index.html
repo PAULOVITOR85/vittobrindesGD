@@ -602,35 +602,35 @@
       </div>
 
       <div class="carousel-slide" onclick="navGo('Cartão de Visita')" style="cursor:pointer">
-        <img data-src="../img/banner-cartao-visita.webp" alt="Cartões de Visita" loading="lazy">
+        <img src="../img/banner-cartao-visita.webp" alt="Cartões de Visita">
       </div>
 
       <div class="carousel-slide" onclick="navGo('')" style="cursor:pointer">
-        <img data-src="../img/banner-entrega.webp" alt="Entrega" loading="lazy">
+        <img src="../img/banner-entrega.webp" alt="Entrega">
       </div>
 
       <div class="carousel-slide" onclick="navGo('Flyer+Panfleto')" style="cursor:pointer">
-        <img data-src="../img/banner-panfleto.webp" alt="Panfleto" loading="lazy">
+        <img src="../img/banner-panfleto.webp" alt="Panfleto">
       </div>
 
       <div class="carousel-slide" onclick="navGo('Banner, Lona e Faixa')" style="cursor:pointer">
-        <img data-src="../img/banner-lona.webp" alt="Banner e Lona" loading="lazy">
+        <img src="../img/banner-lona.webp" alt="Banner e Lona">
       </div>
 
       <div class="carousel-slide" onclick="navGo('Adesivos')" style="cursor:pointer">
-        <img data-src="../img/banner-adesivos.webp" alt="Adesivos" loading="lazy">
+        <img src="../img/banner-adesivos.webp" alt="Adesivos">
       </div>
 
       <div class="carousel-slide" onclick="navGo('Promoção')" style="cursor:pointer">
-        <img data-src="../img/banner-promo-start.webp" alt="Promo Start" loading="lazy">
+        <img src="../img/banner-promo-start.webp" alt="Promo Start">
       </div>
 
       <div class="carousel-slide" onclick="abrirProdutoPorCodigo('DIVULGAJA')" style="cursor:pointer">
-        <img data-src="../img/banner-divulgaja.webp" alt="DivulgaJÁ" loading="lazy">
+        <img src="../img/banner-divulgaja.webp" alt="DivulgaJÁ">
       </div>
 
       <div class="carousel-slide" onclick="navGo('Impressão Rápida')" style="cursor:pointer">
-        <img data-src="../img/banner-impressao-rapida.webp" alt="Impressão Rápida" loading="lazy">
+        <img src="../img/banner-impressao-rapida.webp" alt="Impressão Rápida">
       </div>
 
     </div>
@@ -1132,17 +1132,6 @@ function destScroll(d){
 
 let carouselIdx = 0;
 let carouselTimer = null;
-function carouselLazyLoad(i){
-  const track = document.getElementById('carousel-track');
-  if(!track) return;
-  const slides = track.querySelectorAll('.carousel-slide');
-  const total = slides.length;
-  [i-1, i, i+1, i+2].forEach(n => {
-    const idx = ((n % total) + total) % total;
-    const img = slides[idx].querySelector('img[data-src]');
-    if(img){ img.src = img.dataset.src; img.removeAttribute('data-src'); }
-  });
-}
 function carouselGo(i){
   const track = document.getElementById('carousel-track');
   const dots = document.querySelectorAll('#carousel-nav .carousel-dot');
@@ -1151,14 +1140,12 @@ function carouselGo(i){
   carouselIdx = ((i % total) + total) % total;
   track.style.transform = 'translateX(-' + (carouselIdx * 100) + '%)';
   dots.forEach((d, di) => d.classList.toggle('active', di === carouselIdx));
-  carouselLazyLoad(carouselIdx);
   clearInterval(carouselTimer);
   carouselTimer = setInterval(() => carouselMove(1), 5000);
 }
 function carouselMove(d){ carouselGo(carouselIdx + d); }
 
 document.addEventListener('DOMContentLoaded', () => {
-  carouselLazyLoad(0);
   if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
     carouselTimer = setInterval(() => carouselMove(1), 5000);
   }
