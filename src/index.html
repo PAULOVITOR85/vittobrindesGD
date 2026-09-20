@@ -1751,6 +1751,18 @@ function calcPreco(C, larg, comp, qtd){
             dimdesc.className = 'tamdesc ok';
             const totalM2 = Math.round((C.area || 0) * qtd * 10000) / 10000;
             dimdesc.textContent = C.fdesc + ' · total ' + fmt(totalM2) + ' m² · ' + (ATUAL.prazo || 'consulte');
+          } else if(C.custom && C.tp === 'm2'){
+            const L = parseFloat(larg) || 0;
+            const W = parseFloat(comp) || 0;
+            if(L > 0 && W > 0){
+              const areaCalc = Math.round(L * W * 100) / 10000;
+              dimdesc.className = 'tamdesc ok';
+              dimdesc.textContent = fmtDimBR(L) + ' × ' + fmtDimBR(W) + ' m · ' +
+                fmt(areaCalc) + ' m² · ' + (ATUAL.prazo || 'consulte');
+            } else {
+              dimdesc.className = 'tamdesc warn';
+              dimdesc.textContent = 'Informe a largura e o comprimento (m) para calcular o m².';
+            }
           } else if(C.custom){
             const L = parseFloat(larg) || 0;
             const W = parseFloat(comp) || 0;
