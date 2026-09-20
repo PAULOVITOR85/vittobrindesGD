@@ -1538,6 +1538,17 @@ function calcPreco(C, larg, comp, qtd){
             cI.oninput = recalcular;
             lI.value = 10;
             cI.value = 10;
+          } else if(C.tp === 'm2' && C.custom){
+            dim.style.display = '';
+            document.getElementById('m-dimuni').textContent = 'm';
+            document.getElementById('m-dimlbl').textContent = 'Tamanho — largura × comprimento em metros';
+            const lI = document.getElementById('m-largura');
+            const cI = document.getElementById('m-comprimento');
+            lI.readOnly = false;
+            lI.oninput = recalcular;
+            cI.oninput = recalcular;
+            lI.value = lI.value || 1;
+            cI.value = cI.value || 1;
           } else {
             dim.style.display = 'none';
           }
