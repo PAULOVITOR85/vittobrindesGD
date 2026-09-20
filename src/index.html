@@ -1034,12 +1034,6 @@ function renderCats(){
   let h = '<button class="cat-chip on" data-cat="" onclick="filtrarCat(\'\')">Todos</button>';
   h += '<button class="cat-chip cat-chip-promo" data-cat="Promoção" onclick="filtrarCat(\'Promoção\')">🔥 PROMOÇÃO</button>';
   h += '<button class="cat-chip cat-chip-destaque" data-cat="Impressão Rápida" onclick="filtrarCat(\'Impressão Rápida\')">🖨️ IMPRESSÃO RÁPIDA</button>';
-  h += '<div class="cat-dropdown-wrap"><button class="cat-chip cat-chip-dropdown" id="cat-dropdown-btn" onclick="toggleCatDropdown()">📂 Outras categorias ▾</button><div class="cat-dropdown-list" id="cat-dropdown-list">';
-  cats.forEach(c => {
-    const esc = c.replace(/'/g, "\\'");
-    h += '<button class="cat-dd-item" data-cat="' + c + '" onclick="filtrarCat(\'' + esc + '\');toggleCatDropdown()">' + c + ' <small>(' + counts[c] + ')</small></button>';
-  });
-  h += '</div></div>';
   box.innerHTML = h;
   const sel = document.getElementById('categoria');
   if(sel){
