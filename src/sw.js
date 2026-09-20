@@ -1,5 +1,5 @@
 /* VITTO GD - Service Worker */
-const CACHE = 'vitto-gd-v4';
+const CACHE = 'vitto-gd-v5';
 const CORE = [
   './',
   './index.html',
@@ -7,7 +7,8 @@ const CORE = [
   './manifest.json',
   '../img/icon-192.png',
   '../img/icon-512.png',
-  '../img/icon-maskable-512.png'
+  '../img/icon-maskable-512.png',
+  '../img/banner-promocao.webp'
 ];
 
 self.addEventListener('install', (e) => {
