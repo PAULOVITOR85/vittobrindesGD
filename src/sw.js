@@ -1,5 +1,5 @@
 /* VITTO GD - Service Worker */
-const CACHE = 'vitto-gd-v7';
+const CACHE = 'vitto-gd-v8';
 const CORE = [
   './',
   './index.html',
@@ -7,8 +7,7 @@ const CORE = [
   './manifest.json',
   '../img/icon-192.png',
   '../img/icon-512.png',
-  '../img/icon-maskable-512.png',
-  '../img/banner-promocao.webp'
+  '../img/icon-maskable-512.png'
 ];
 
 self.addEventListener('install', (e) => {
@@ -30,21 +29,15 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
 
-  // Navegação: rede primeiro, cai pro cache offline
+  // Navegação: sempre rede primeiro
   if (req.mode === 'navigate') {
     e.respondWith(
-      fetch(req)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put('./index.html', copy));
-          return res;
-        })
-        .catch(() => caches.match('./index.html'))
+      fetch(req).catch(() => caches.match('./index.html'))
     );
     return;
   }
 
-  // Imagens externas (produtos): cache-first
+  // Imagens de produto (externas): cache-first
   if (url.origin !== location.origin && /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(url.pathname)) {
     e.respondWith(
       caches.match(req).then((hit) => {
@@ -61,17 +54,14 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // Demais recursos: cache primeiro, atualiza em background
+  // Demais: network-first, fallback cache
   e.respondWith(
-    caches.match(req).then((hit) => {
-      const fetchPromise = fetch(req).then((res) => {
-        if (res && res.status === 200) {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(req, copy));
-        }
-        return res;
-      }).catch(() => hit);
-      return hit || fetchPromise;
-    })
+    fetch(req).then((res) => {
+      if (res && res.status === 200) {
+        const copy = res.clone();
+        caches.open(CACHE).then((c) => c.put(req, copy));
+      }
+      return res;
+    }).catch(() => caches.match(req))
   );
 });
