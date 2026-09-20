@@ -1802,7 +1802,7 @@ function calcPreco(C, larg, comp, qtd){
               dimdesc.textContent = 'Informe a largura e o comprimento para calcular o preço.';
             }
           }
-          const ok = tamlist ? (r.pcArea > 0 && r.porFolha > 0) : (C.custom ? (r.pcArea > 0 && r.porFolha > 0) : ((C.tp !== 'm2' && C.tp !== 'cm2' && C.tp !== 'm') || r.area > 0));
+          const ok = tamlist ? (r.pcArea > 0 && r.porFolha > 0) : (C.custom ? (C.tp === 'm2' ? r.area > 0 : (r.pcArea > 0 && r.porFolha > 0)) : ((C.tp !== 'm2' && C.tp !== 'cm2' && C.tp !== 'm') || r.area > 0));
           const tot = ok && r.venda > 0 ? r.venda : ATUAL.venda * qtd;
           const folhaLbl = C.unlbl || 'folha';
           const rot = C.custom ? 'Preço (' + folhaLbl + ')' : (C.unlbl ? 'Preço (' + C.unlbl + ')' : (C.tp === 'm2' || C.tp === 'm' || (C.tp === 'cm2' && C.m2) ? 'Preço (m²)' : (C.tp === 'cm2' ? 'Preço (cm²)' : 'Preço (unidade)')));
