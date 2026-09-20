@@ -598,39 +598,39 @@
     <div class="carousel-track" id="carousel-track">
 
       <div class="carousel-slide" onclick="navGo('Promoção')" style="cursor:pointer">
-        <picture><source srcset="../img/banner-promocao.webp" type="image/webp"><img src="../img/banner-promocao.svg" alt="Promoção do mês" fetchpriority="high"></picture>
+        <img src="../img/banner-promocao.webp" alt="Promoção do mês" fetchpriority="high">
       </div>
 
       <div class="carousel-slide" onclick="navGo('Cartão de Visita')" style="cursor:pointer">
-        <picture><source data-srcset="../img/banner-cartao-visita.webp" type="image/webp"><img data-src="../img/banner-cartao-visita.svg" alt="Cartões de Visita" loading="lazy"></picture>
+        <img data-src="../img/banner-cartao-visita.webp" alt="Cartões de Visita" loading="lazy">
       </div>
 
       <div class="carousel-slide" onclick="navGo('')" style="cursor:pointer">
-        <picture><source data-srcset="../img/banner-entrega.webp" type="image/webp"><img data-src="../img/banner-entrega.svg" alt="Entrega" loading="lazy"></picture>
+        <img data-src="../img/banner-entrega.webp" alt="Entrega" loading="lazy">
       </div>
 
       <div class="carousel-slide" onclick="navGo('Flyer+Panfleto')" style="cursor:pointer">
-        <picture><source data-srcset="../img/banner-panfleto.webp" type="image/webp"><img data-src="../img/banner-panfleto.svg" alt="Panfleto" loading="lazy"></picture>
+        <img data-src="../img/banner-panfleto.webp" alt="Panfleto" loading="lazy">
       </div>
 
       <div class="carousel-slide" onclick="navGo('Banner, Lona e Faixa')" style="cursor:pointer">
-        <picture><source data-srcset="../img/banner-lona.webp" type="image/webp"><img data-src="../img/banner-lona.svg" alt="Banner e Lona" loading="lazy"></picture>
+        <img data-src="../img/banner-lona.webp" alt="Banner e Lona" loading="lazy">
       </div>
 
       <div class="carousel-slide" onclick="navGo('Adesivos')" style="cursor:pointer">
-        <picture><source data-srcset="../img/banner-adesivos.webp" type="image/webp"><img data-src="../img/banner-adesivos.svg" alt="Adesivos" loading="lazy"></picture>
+        <img data-src="../img/banner-adesivos.webp" alt="Adesivos" loading="lazy">
       </div>
 
       <div class="carousel-slide" onclick="navGo('Promoção')" style="cursor:pointer">
-        <picture><source data-srcset="../img/banner-promo-start.webp" type="image/webp"><img data-src="../img/banner-promo-start.svg" alt="Promo Start" loading="lazy"></picture>
+        <img data-src="../img/banner-promo-start.webp" alt="Promo Start" loading="lazy">
       </div>
 
       <div class="carousel-slide" onclick="abrirProdutoPorCodigo('DIVULGAJA')" style="cursor:pointer">
-        <picture><source data-srcset="../img/banner-divulgaja.webp" type="image/webp"><img data-src="../img/banner-divulgaja.svg" alt="DivulgaJÁ" loading="lazy"></picture>
+        <img data-src="../img/banner-divulgaja.webp" alt="DivulgaJÁ" loading="lazy">
       </div>
 
       <div class="carousel-slide" onclick="navGo('Impressão Rápida')" style="cursor:pointer">
-        <picture><source data-srcset="../img/banner-impressao-rapida.webp" type="image/webp"><img data-src="../img/banner-impressao-rapida.svg" alt="Impressão Rápida" loading="lazy"></picture>
+        <img data-src="../img/banner-impressao-rapida.webp" alt="Impressão Rápida" loading="lazy">
       </div>
 
     </div>
@@ -1139,10 +1139,7 @@ function carouselLazyLoad(i){
   const total = slides.length;
   [i-1, i, i+1, i+2].forEach(n => {
     const idx = ((n % total) + total) % total;
-    const el = slides[idx];
-    const source = el.querySelector('source[data-srcset]');
-    if(source){ source.srcset = source.dataset.srcset; source.removeAttribute('data-srcset'); }
-    const img = el.querySelector('img[data-src]');
+    const img = slides[idx].querySelector('img[data-src]');
     if(img){ img.src = img.dataset.src; img.removeAttribute('data-src'); }
   });
 }
