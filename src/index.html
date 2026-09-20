@@ -1326,7 +1326,8 @@ function calcPreco(C, larg, comp, qtd){
             }
             if(!on) return;
             const v = a.nomargem ? (a.v || 0) : margem(a.v), t = a.t;
-            if(t === 'm2') total += v * (area != null ? area : 1) * qtdT;
+            if(t === 'dobro') total *= 2;
+            else if(t === 'm2') total += v * (area != null ? area : 1) * qtdT;
             else if(t === 'unitario') total += v * qtdT;
             else if(t === 'linear') total += v * ((comp * 2) + (larg * 2)) * qtdT;
             else {
@@ -1358,6 +1359,7 @@ function calcPreco(C, larg, comp, qtd){
           ).join('');
         }
         function precoAc(a){
+          if(a.t === 'dobro') return ' <small class="gra">Dobra o valor</small>';
           if(!(a.v > 0)) return '';
           const suf = a.t === 'm2' ? '/m²' : (a.t === 'unitario' ? '/un.' : (a.t === 'linear' ? '/m' : ''));
           return ' <small class="gra">+ R$ ' + fmt(a.nomargem ? a.v : margem(a.v)) + suf + '</small>';
