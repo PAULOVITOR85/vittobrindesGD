@@ -1099,7 +1099,7 @@ function renderDestaques(){
   if(!track) return;
   const porCat = {};
   PRODUTOS.forEach((p, i) => { (porCat[p.cat] = porCat[p.cat] || []).push(i); });
-  const ordem = ['Promoção', 'Adesivos', 'Banner, Lona e Faixa', 'Tecidos', 'PS e PVC', 'Wind Banner', 'DTF Têxtil', 'DTF UV para Rígidos', 'Tapete e Capacho', 'Papel Sublimático', 'Lambe-Lambe', 'Impressão à Laser'];
+  const ordem = ['Promoção', 'Adesivos', 'Banner, Lona e Faixa', 'Mini Banners', 'Tecidos', 'PS e PVC', 'Wind Banner', 'DTF Têxtil', 'DTF UV para Rígidos', 'Tapete e Capacho', 'Papel Sublimático', 'Lambe-Lambe', 'Impressão à Laser'];
   const idx = [];
   ordem.forEach(c => { if(porCat[c]) porCat[c].slice(0, 2).forEach(i => idx.push(i)); });
   PRODUTOS.forEach((p, i) => { if(idx.length >= 10) return; if(idx.indexOf(i) < 0) idx.push(i); });
@@ -1432,8 +1432,9 @@ function calcPreco(C, larg, comp, qtd){
           }
           const folha = !pecas && soPacotes;
           const useFolhaMode = !!(C.fdp || C.por_cm2);
-          document.getElementById('pkbtn').style.display = useFolhaMode ? 'none' : '';
-          document.getElementById('unbtn').style.display = (soPacotes || soPackprices || useFolhaMode) ? 'none' : '';
+          const isM2Custom = C.tp === 'm2' && C.custom;
+          document.getElementById('pkbtn').style.display = (useFolhaMode || isM2Custom) ? 'none' : '';
+          document.getElementById('unbtn').style.display = (soPacotes || soPackprices || useFolhaMode || isM2Custom) ? 'none' : '';
           mudarModo('un');
           const tl = document.getElementById('m-tamlist');
           if(tamlist || C.fdp || C.por_cm2){
