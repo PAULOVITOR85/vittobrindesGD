@@ -1467,7 +1467,7 @@ function calcPreco(C, larg, comp, qtd){
           const isMedidaMode = selectedTam === -1;
           if(C.fixed || isFolhaMode){
             dim.style.display = 'none';
-          } else if(isMedidaMode || (C.tp === 'cm2' && C.custom)){
+          } else if(isMedidaMode || (C.tp === 'cm2' && C.custom) || (C.tp === 'm2' && C.custom)){
             dim.style.display = '';
             lI.readOnly = false;
             lI.oninput = recalcular;
