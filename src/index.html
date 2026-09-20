@@ -1433,8 +1433,9 @@ function calcPreco(C, larg, comp, qtd){
           const folha = !pecas && soPacotes;
           const useFolhaMode = !!(C.fdp || C.por_cm2);
           const isM2Custom = C.tp === 'm2' && C.custom;
-          document.getElementById('pkbtn').style.display = (useFolhaMode || isM2Custom) ? 'none' : '';
-          document.getElementById('unbtn').style.display = (soPacotes || soPackprices || useFolhaMode || isM2Custom) ? 'none' : '';
+          const hideQty = !!C.hideqty;
+          document.getElementById('pkbtn').style.display = (useFolhaMode || isM2Custom || hideQty) ? 'none' : '';
+          document.getElementById('unbtn').style.display = (soPacotes || soPackprices || useFolhaMode || isM2Custom || hideQty) ? 'none' : '';
           mudarModo('un');
           const tl = document.getElementById('m-tamlist');
           if(tamlist || C.fdp || C.por_cm2){
