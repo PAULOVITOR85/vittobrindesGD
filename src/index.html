@@ -1284,13 +1284,13 @@ function calcPreco(C, larg, comp, qtd){
               puEff = pp;
               folhas = Number(qtd) || 0;
 } else if(C.tp === 'm2' && C.custom && C.tamlist && C.tamlist.length && selectedTam >= 0){
-              // Adesivos m2 com tamlist: calcula m² a partir de cm
+              // Adesivos m2: preço por m² com tamanho pré-definido (cm)
               let L = 0, W = 0;
               if(C.tamlist[selectedTam]){ L = C.tamlist[selectedTam][0]; W = C.tamlist[selectedTam][1]; }
               area = L > 0 && W > 0 ? Math.round(L * W / 10000 * 10000) / 10000 : 0;
               base = area > 0 ? (C.pu || 0) * area * qtd : 0;
 } else if(C.tp === 'm2' && C.custom && C.tamlist && C.tamlist.length && selectedTam === -1){
-              // Adesivos m2 medida personalizada em cm
+              // Adesivos m2: medida personalizada em cm
               larg = Number(larg) || 0; comp = Number(comp) || 0;
               area = larg > 0 && comp > 0 ? Math.round(larg * comp / 10000 * 10000) / 10000 : 0;
               base = area > 0 ? (C.pu || 0) * area * qtd : 0;
@@ -1472,14 +1472,14 @@ function calcPreco(C, larg, comp, qtd){
           document.getElementById('unbtn').style.display = (soPacotes || soPackprices || useFolhaMode || isM2Custom || hideQty) ? 'none' : '';
           mudarModo('un');
           const tl = document.getElementById('m-tamlist');
-          if(tamlist || C.fdp || C.por_cm2 || (C.tp === 'm2' && C.custom)){
+          if(tamlist || C.fdp || C.por_cm2 || (C.tp === 'm2' && C.custom && C.tamlist && C.tamlist.length)){
             tl.style.display = '';
             const tsel = document.getElementById('m-tamsel');
             const tlLabel = tl.querySelector('label');
-            if(tlLabel) tlLabel.textContent = (C.fdp || C.por_cm2) ? 'Opção por folha ou tamanho' : (C.tp === 'm2' && C.custom) ? 'Tamanho do adesivo' : 'Tamanho do recorte';
+            if(tlLabel) tlLabel.textContent = (C.fdp || C.por_cm2) ? 'Opção por folha ou tamanho' : (C.tp === 'm2' && C.custom && C.tamlist) ? 'Tamanho do adesivo' : 'Tamanho do recorte';
             let options = '';
             if(C.fdp) options += '<option value="-2">Comprar por folha</option>';
-            if(C.por_cm2 || (C.tamlist && C.tamlist.length) || (C.tp === 'm2' && C.custom)) options += '<option value="-1">Medida personalizada</option>';
+            if(C.por_cm2 || (C.tamlist && C.tamlist.length)) options += '<option value="-1">Medida personalizada</option>';
             if(C.tamlist && C.tamlist.length){
               options += C.tamlist.map((t, i) =>
                 '<option value="' + i + '">' + fmtDimBR(t[0]) + ' × ' + fmtDimBR(t[1]) + ' cm</option>'
@@ -1571,8 +1571,8 @@ function calcPreco(C, larg, comp, qtd){
             lI.value = 10;
             cI.value = 10;
           } else if(C.tp === 'm2' && C.custom && C.tamlist && C.tamlist.length){
+            const tamIdx = parseInt(val);
             if(medida){
-              // Medida personalizada em cm
               dim.style.display = '';
               document.getElementById('m-dimuni').textContent = 'cm';
               document.getElementById('m-dimlbl').textContent = 'Tamanho do adesivo — largura × comprimento em cm';
@@ -1583,8 +1583,17 @@ function calcPreco(C, larg, comp, qtd){
               cI.oninput = recalcular;
               lI.value = lI.value || 10;
               cI.value = cI.value || 10;
+            } else if(tamIdx >= 0 && C.tamlist[tamIdx]){
+              dim.style.display = '';
+              document.getElementById('m-dimuni').textContent = 'cm';
+              document.getElementById('m-dimlbl').textContent = 'Tamanho do adesivo — largura × comprimento em cm';
+              const lI = document.getElementById('m-largura');
+              const cI = document.getElementById('m-comprimento');
+              lI.readOnly = true;
+              cI.readOnly = true;
+              lI.value = C.tamlist[tamIdx][0];
+              cI.value = C.tamlist[tamIdx][1];
             } else {
-              // Tamanho pré-definido do tamlist
               dim.style.display = 'none';
             }
           } else {
