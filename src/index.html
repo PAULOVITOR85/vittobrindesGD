@@ -1283,17 +1283,6 @@ function calcPreco(C, larg, comp, qtd){
               base = pp * qtd;
               puEff = pp;
               folhas = Number(qtd) || 0;
-} else if(C.tp === 'm2' && C.custom && C.tamlist && C.tamlist.length && selectedTam >= 0){
-              // Adesivos m2: preço por m² com tamanho pré-definido (cm)
-              let L = 0, W = 0;
-              if(C.tamlist[selectedTam]){ L = C.tamlist[selectedTam][0]; W = C.tamlist[selectedTam][1]; }
-              area = L > 0 && W > 0 ? Math.round(L * W / 10000 * 10000) / 10000 : 0;
-              base = area > 0 ? (C.pu || 0) * area * qtd : 0;
-} else if(C.tp === 'm2' && C.custom && C.tamlist && C.tamlist.length && selectedTam === -1){
-              // Adesivos m2: medida personalizada em cm
-              larg = Number(larg) || 0; comp = Number(comp) || 0;
-              area = larg > 0 && comp > 0 ? Math.round(larg * comp / 10000 * 10000) / 10000 : 0;
-              base = area > 0 ? (C.pu || 0) * area * qtd : 0;
 } else if(C.tamlist && C.tamlist.length && selectedTam >= 0){
               let L = 0, W = 0;
               if(C.tamlist[selectedTam]){ L = C.tamlist[selectedTam][0]; W = C.tamlist[selectedTam][1]; }
@@ -1320,6 +1309,14 @@ function calcPreco(C, larg, comp, qtd){
               const ppf = precoFolha(C, folhas);
               base = ppf * folhas;
               puEff = ppf;
+            } else if(C.tp === 'm2' && C.custom){
+              larg = Number(larg) || 0; comp = Number(comp) || 0;
+              if(C.dimCm){
+                area = larg > 0 && comp > 0 ? Math.round(larg * comp / 10000 * 10000) / 10000 : 0;
+              } else {
+                area = Math.round(larg * comp * 10000) / 10000;
+              }
+              base = area > 0 ? (C.pu || 0) * area * qtd : 0;
             } else if(C.tp === 'm2' || C.tp === 'cm2' || C.tp === 'm'){
               larg = Number(larg) || 0; comp = Number(comp) || 0;
               area = C.fixed ? (C.area || 0) : Math.round(larg * comp * 10000) / 10000;
@@ -1472,11 +1469,11 @@ function calcPreco(C, larg, comp, qtd){
           document.getElementById('unbtn').style.display = (soPacotes || soPackprices || useFolhaMode || isM2Custom || hideQty) ? 'none' : '';
           mudarModo('un');
           const tl = document.getElementById('m-tamlist');
-          if(tamlist || C.fdp || C.por_cm2 || (C.tp === 'm2' && C.custom && C.tamlist && C.tamlist.length)){
+          if(tamlist || C.fdp || C.por_cm2){
             tl.style.display = '';
             const tsel = document.getElementById('m-tamsel');
             const tlLabel = tl.querySelector('label');
-            if(tlLabel) tlLabel.textContent = (C.fdp || C.por_cm2) ? 'Opção por folha ou tamanho' : (C.tp === 'm2' && C.custom && C.tamlist) ? 'Tamanho do adesivo' : 'Tamanho do recorte';
+            if(tlLabel) tlLabel.textContent = (C.fdp || C.por_cm2) ? 'Opção por folha ou tamanho' : 'Tamanho do recorte';
             let options = '';
             if(C.fdp) options += '<option value="-2">Comprar por folha</option>';
             if(C.por_cm2 || (C.tamlist && C.tamlist.length)) options += '<option value="-1">Medida personalizada</option>';
@@ -1520,11 +1517,18 @@ function calcPreco(C, larg, comp, qtd){
               }
               lI.value = 10;
               cI.value = 10;
-            } else {
-              document.getElementById('m-dimuni').textContent = 'm';
-              document.getElementById('m-dimlbl').textContent = 'Tamanho — largura × comprimento em metros';
-              lI.value = 1;
-              cI.value = 1;
+            } else if(C.tp === 'm2' && C.custom){
+              if(C.dimCm){
+                document.getElementById('m-dimuni').textContent = 'cm';
+                document.getElementById('m-dimlbl').textContent = 'Tamanho do adesivo — largura × comprimento em cm';
+                lI.value = lI.value || 10;
+                cI.value = cI.value || 10;
+              } else {
+                document.getElementById('m-dimuni').textContent = 'm';
+                document.getElementById('m-dimlbl').textContent = 'Tamanho — largura × comprimento em metros';
+                lI.value = lI.value || 1;
+                cI.value = cI.value || 1;
+              }
             }
           } else {
             dim.style.display = 'none';
@@ -1558,8 +1562,8 @@ function calcPreco(C, larg, comp, qtd){
           if(folha){
             // Comprar por folha: oculta dimensões
             dim.style.display = 'none';
-          } else if(medida && !(C.tp === 'm2' && C.custom && C.tamlist && C.tamlist.length)){
-            // Medida na folha: mostra dimensões
+          } else if(medida){
+            // Medida personalizada: mostra dimensões
             dim.style.display = '';
             document.getElementById('m-dimuni').textContent = 'cm';
             document.getElementById('m-dimlbl').textContent = 'Medida da arte — largura × comprimento em cm (calcula quantas cabem na ' + folhaLabel + ')';
@@ -1570,32 +1574,22 @@ function calcPreco(C, larg, comp, qtd){
             cI.oninput = recalcular;
             lI.value = 10;
             cI.value = 10;
-          } else if(C.tp === 'm2' && C.custom && C.tamlist && C.tamlist.length){
-            const tamIdx = parseInt(val);
-            if(medida){
-              dim.style.display = '';
+          } else if(C.tp === 'm2' && C.custom){
+            dim.style.display = '';
+            if(C.dimCm){
               document.getElementById('m-dimuni').textContent = 'cm';
               document.getElementById('m-dimlbl').textContent = 'Tamanho do adesivo — largura × comprimento em cm';
-              const lI = document.getElementById('m-largura');
-              const cI = document.getElementById('m-comprimento');
-              lI.readOnly = false;
-              lI.oninput = recalcular;
-              cI.oninput = recalcular;
-              lI.value = lI.value || 10;
-              cI.value = cI.value || 10;
-            } else if(tamIdx >= 0 && C.tamlist[tamIdx]){
-              dim.style.display = '';
-              document.getElementById('m-dimuni').textContent = 'cm';
-              document.getElementById('m-dimlbl').textContent = 'Tamanho do adesivo — largura × comprimento em cm';
-              const lI = document.getElementById('m-largura');
-              const cI = document.getElementById('m-comprimento');
-              lI.readOnly = true;
-              cI.readOnly = true;
-              lI.value = C.tamlist[tamIdx][0];
-              cI.value = C.tamlist[tamIdx][1];
             } else {
-              dim.style.display = 'none';
+              document.getElementById('m-dimuni').textContent = 'm';
+              document.getElementById('m-dimlbl').textContent = 'Tamanho — largura × comprimento em metros';
             }
+            const lI = document.getElementById('m-largura');
+            const cI = document.getElementById('m-comprimento');
+            lI.readOnly = false;
+            lI.oninput = recalcular;
+            cI.oninput = recalcular;
+            lI.value = lI.value || (C.dimCm ? 10 : 1);
+            cI.value = cI.value || (C.dimCm ? 10 : 1);
           } else {
             dim.style.display = 'none';
           }
@@ -1774,23 +1768,6 @@ function calcPreco(C, larg, comp, qtd){
               dimdesc.className = 'tamdesc warn';
               dimdesc.textContent = 'Informe a largura e o comprimento (cm) da arte.';
             }
-          } else if(C.tp === 'm2' && C.custom && tamlist){
-            const sel = document.getElementById('m-tamsel');
-            const oi = sel ? parseInt(sel.value) : 0;
-            const custom = oi === -1;
-            let L = 0, W = 0;
-            if(!custom && C.tamlist[oi]){ L = C.tamlist[oi][0]; W = C.tamlist[oi][1]; }
-            else if(custom){ L = parseFloat(larg) || 0; W = parseFloat(comp) || 0; }
-            const td = document.getElementById('m-tamdesc');
-            if(L > 0 && W > 0){
-              const areaCalc = Math.round(L * W / 10000 * 10000) / 10000;
-              td.className = 'tamdesc ok';
-              td.textContent = fmtDimBR(L) + ' × ' + fmtDimBR(W) + ' cm · ' +
-                fmt(areaCalc) + ' m² · ' + (ATUAL.prazo || 'consulte');
-            } else {
-              td.className = 'tamdesc warn';
-              td.textContent = custom ? 'Informe a largura e o comprimento (cm).' : '';
-            }
           } else if(tamlist){
             const sel = document.getElementById('m-tamsel');
             const oi = sel ? parseInt(sel.value) : 0;
@@ -1816,36 +1793,16 @@ function calcPreco(C, larg, comp, qtd){
             const totalM2 = Math.round((C.area || 0) * qtd * 10000) / 10000;
             dimdesc.textContent = C.fdesc + ' · total ' + fmt(totalM2) + ' m² · ' + (ATUAL.prazo || 'consulte');
           } else if(C.custom && C.tp === 'm2'){
-            const tamSel = document.getElementById('m-tamsel');
-            const tamIdx = tamSel ? parseInt(tamSel.value) : -1;
-            let L = 0, W = 0;
-            if(C.tamlist && C.tamlist.length && tamIdx >= 0 && C.tamlist[tamIdx]){
-              L = C.tamlist[tamIdx][0];
-              W = C.tamlist[tamIdx][1];
-            } else {
-              L = parseFloat(larg) || 0;
-              W = parseFloat(comp) || 0;
-            }
-            if(L > 0 && W > 0){
-              const areaCalc = Math.round(L * W / 10000 * 10000) / 10000;
-              dimdesc.className = 'tamdesc ok';
-              dimdesc.textContent = fmtDimBR(L) + ' × ' + fmtDimBR(W) + ' cm · ' +
-                fmt(areaCalc) + ' m² · ' + (ATUAL.prazo || 'consulte');
-            } else {
-              dimdesc.className = 'tamdesc warn';
-              dimdesc.textContent = 'Informe a largura e o comprimento (m) para calcular o m².';
-            }
-          } else if(isMedidaMode && C.tp === 'm2' && C.custom && C.tamlist && C.tamlist.length){
             const L = parseFloat(larg) || 0;
             const W = parseFloat(comp) || 0;
             if(L > 0 && W > 0){
-              const areaCalc = Math.round(L * W / 10000 * 10000) / 10000;
+              const areaCalc = C.dimCm ? Math.round(L * W / 10000 * 10000) / 10000 : Math.round(L * W * 10000) / 10000;
               dimdesc.className = 'tamdesc ok';
-              dimdesc.textContent = fmtDimBR(L) + ' × ' + fmtDimBR(W) + ' cm · ' +
+              dimdesc.textContent = fmtDimBR(L) + ' × ' + fmtDimBR(W) + (C.dimCm ? ' cm · ' : ' m · ') +
                 fmt(areaCalc) + ' m² · ' + (ATUAL.prazo || 'consulte');
             } else {
               dimdesc.className = 'tamdesc warn';
-              dimdesc.textContent = 'Informe a largura e o comprimento (cm) para calcular o preço.';
+              dimdesc.textContent = 'Informe a largura e o comprimento (' + (C.dimCm ? 'cm' : 'm') + ') para calcular o m².';
             }
           } else if(isMedidaMode){
             const L = parseFloat(larg) || 0;
@@ -1889,7 +1846,7 @@ function calcPreco(C, larg, comp, qtd){
           const ok = tamlist ? (r.pcArea > 0 && r.porFolha > 0) : (C.custom ? (C.tp === 'm2' ? r.area > 0 : (r.pcArea > 0 && r.porFolha > 0)) : ((C.tp !== 'm2' && C.tp !== 'cm2' && C.tp !== 'm') || r.area > 0));
           const tot = ok && r.venda > 0 ? r.venda : ATUAL.venda * qtd;
           const folhaLbl = C.unlbl || 'folha';
-          const rot = C.custom ? 'Preço (' + folhaLbl + ')' : (C.unlbl ? 'Preço (' + C.unlbl + ')' : (C.tp === 'm2' || C.tp === 'm' || (C.tp === 'cm2' && C.m2) ? 'Preço (m²)' : (C.tp === 'cm2' ? 'Preço (cm²)' : 'Preço (unidade)')));
+          const rot = (C.custom && C.tp === 'm2') ? 'Preço (m²)' : (C.custom ? 'Preço (' + folhaLbl + ')' : (C.unlbl ? 'Preço (' + C.unlbl + ')' : (C.tp === 'm2' || C.tp === 'm' || (C.tp === 'cm2' && C.m2) ? 'Preço (m²)' : (C.tp === 'cm2' ? 'Preço (cm²)' : 'Preço (unidade)'))));
           if(C.packprices && qtd > 1){
             document.getElementById('m-lblpreco').textContent = 'Preço por unidade';
             document.getElementById('m-uni').textContent = fmt(tot / qtd);
