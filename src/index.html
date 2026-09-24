@@ -912,9 +912,9 @@ function card(p){
         ${p.tam ? `<div><b>Descrição:</b> ${p.tam}</div>` : ''}
       </div>
       <div class="preco">
-        <div class="lbl">${p.cfg.packprices ? 'A partir de (un)' : 'A partir de'}</div>
+        <div class="lbl">${(p.cfg.packprices || p.cfg.qtdtiers) ? 'A partir de (un)' : 'A partir de'}</div>
         <div class="val">R$ ${fmt(p.venda)}</div>
-        ${p.cfg.packprices ? '<div class="chip">Quantidades: ' + Object.keys(p.cfg.packprices).join(', ') + ' un</div>' : ''}
+        ${p.cfg.qtdtiers ? '<div class="chip">Desconto: ' + p.cfg.qtdtiers.map(function(t){ return t[0] + '+ un = -' + Math.round((1 - t[1]) * 100) + '%'; }).join(' · ') + '</div>' : (p.cfg.packprices ? '<div class="chip">Quantidades: ' + Object.keys(p.cfg.packprices).join(', ') + ' un</div>' : '')}
         ${p.cfg.tamlist ? '<div class="chip">Tamanhos padrão · ' + (p.cfg.unlbl || 'folha') + '</div>' : (p.cfg.custom ? '<div class="chip">Sob medida · digite o tamanho da arte (cm)</div>' : (p.cfg.fixed && p.cfg.unlbl ? '<div class="chip">Tamanho fixo · ' + p.cfg.unlbl + '</div>' : (p.cfg.fixed ? '<div class="chip">Tamanho fixo · preço por m²</div>' : (p.cfg.tp==='cm2' && p.cfg.fdp ? '<div class="chip">Sob medida · preço por ' + (p.cfg.unlbl || 'folha') + '</div>' : (p.cfg.tp==='m2' || (p.cfg.tp==='cm2' && p.cfg.m2) ? '<div class="chip">Sob medida · preço por m²</div>' : (p.cfg.tp==='cm2' ? '<div class="chip">Sob medida · preço por cm²</div>' : (p.cfg.tp==='m' ? '<div class="chip">Por metro linear · largura fixa</div>' : '')))))))}
         <div class="prazo">Produção: ${p.prazo || 'consulte'}${p.prazod ? ` · previsão ${dataEntrega(p.prazod)}` : ''}</div>
         <button class="btn-pedir" ${p.esgotado ? 'disabled' : `onclick="event.stopPropagation(); abrirPedido(${p.i})"`}>${p.esgotado ? 'Indisponível' : '🛒 Adicionar'}</button>
@@ -1334,6 +1334,14 @@ function calcPreco(C, larg, comp, qtd){
              const pp = precoFolha(C, qtd);
              base = pp * qtd;
              puEff = pp;
+            } else if(C.qtdtiers){
+              let puq = C.pu || 0;
+              for(let i = 0; i < C.qtdtiers.length; i++){
+                const t = C.qtdtiers[i];
+                if((Number(qtd) || 0) >= t[0]) puq = (C.pu || 0) * t[1];
+              }
+              base = puq * qtd;
+              puEff = puq;
             } else {
               base = C.packprices && C.packprices[qtd] != null ? C.packprices[qtd] : (C.pu || 0) * qtd;
             }
@@ -1395,14 +1403,14 @@ function calcPreco(C, larg, comp, qtd){
         function renderAcs(C){
           const box = document.getElementById('m-ac');
           const acs = C.ac || [];
-          if(!acs.length){ box.style.display = 'none'; box.innerHTML = ''; return; }
+          if(!acs.length && !C.acNote){ box.style.display = 'none'; box.innerHTML = ''; return; }
           box.style.display = '';
           let h = '';
           const obg = acs.filter(a => a.obg === 1);
           if(obg.length) h += '<div class="inclui">✓ Inclui: ' + obg.map(a => a.n).join('; ') + '</div>';
           if(acs.some(a => a.obg === 2)){
-            h += '<div class="bloco"><label>Acabamentos (escolha 1)</label><div class="gradio">';
-            h += '<label><input type="radio" name="acg" id="ac-nenhum" checked onchange="recalcular()"> NENHUM</label>';
+            h += '<div class="bloco"><label>' + (C.acLabel || 'Acabamentos (escolha 1)') + '</label><div class="gradio">';
+            h += '<label><input type="radio" name="acg" id="ac-nenhum" checked onchange="recalcular()"> ' + (C.acNenhum || 'NENHUM') + '</label>';
             acs.forEach((a, ai) => {
               if(a.obg !== 2) return;
               h += '<label><input type="radio" name="acg" id="ac-' + ai + '" onchange="recalcular()"> ' + a.n + precoAc(a) + '</label>';
@@ -1417,6 +1425,7 @@ function calcPreco(C, larg, comp, qtd){
             });
             h += '</div>';
           }
+          if(C.acNote) h += '<div class="inclui">' + C.acNote + '</div>';
           box.innerHTML = h;
         }
         function renderSos(C){
@@ -1847,7 +1856,7 @@ function calcPreco(C, larg, comp, qtd){
           const tot = ok && r.venda > 0 ? r.venda : ATUAL.venda * qtd;
           const folhaLbl = C.unlbl || 'folha';
           const rot = (C.custom && C.tp === 'm2') ? 'Preço (m²)' : (C.custom ? 'Preço (' + folhaLbl + ')' : (C.unlbl ? 'Preço (' + C.unlbl + ')' : (C.tp === 'm2' || C.tp === 'm' || (C.tp === 'cm2' && C.m2) ? 'Preço (m²)' : (C.tp === 'cm2' ? 'Preço (cm²)' : 'Preço (unidade)'))));
-          if(C.packprices && qtd > 1){
+          if((C.packprices || C.qtdtiers) && qtd > 1){
             document.getElementById('m-lblpreco').textContent = 'Preço por unidade';
             document.getElementById('m-uni').textContent = fmt(tot / qtd);
           } else {
