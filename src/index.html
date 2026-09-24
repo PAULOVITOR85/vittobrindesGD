@@ -1772,7 +1772,9 @@ function calcPreco(C, larg, comp, qtd){
                 totPecas + ' peça' + (totPecas > 1 ? 's' : '') + ' · ' + (ATUAL.prazo || 'consulte');
             } else if(L > 0 && W > 0){
               dimdesc.className = 'tamdesc warn';
-              dimdesc.textContent = 'Este tamanho não cabe na ' + folhaLabel + ' (' + fmtDimBR(fL) + ' × ' + fmtDimBR(fW) + ' cm).';
+              const fLx = C.folha ? C.folha[0] * 100 : 29.7;
+              const fWx = C.folha ? C.folha[1] * 100 : 42;
+              dimdesc.textContent = 'Este tamanho não cabe na ' + folhaLabel + ' (' + fmtDimBR(fLx) + ' × ' + fmtDimBR(fWx) + ' cm).';
             } else {
               dimdesc.className = 'tamdesc warn';
               dimdesc.textContent = 'Informe a largura e o comprimento (cm) da arte.';
