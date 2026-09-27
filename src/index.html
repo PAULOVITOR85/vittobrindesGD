@@ -98,6 +98,7 @@
   .card img{width:100%;height:180px;object-fit:contain;transition:transform .3s ease}
   .card:hover img{transform:scale(1.03)}
   .card .esg{position:absolute;top:10px;left:10px;background:var(--perigo);color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;letter-spacing:.5px;z-index:1}
+  .card .destq{position:absolute;top:10px;right:10px;background:linear-gradient(135deg,var(--destaque),var(--destaque2));color:#04141c;font-size:10px;font-weight:800;padding:4px 10px;border-radius:6px;letter-spacing:.5px;z-index:1;box-shadow:0 2px 8px rgba(0,232,157,.3)}
   .card .body{padding:14px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
   .card .cat{font-size:10px;text-transform:uppercase;color:var(--destaque);background:var(--destaque-dim);font-weight:700;letter-spacing:.5px;padding:3px 10px;border-radius:999px;display:inline-block;width:fit-content;border:1px solid rgba(0,232,157,.15)}
   .card .titulo{font-size:14px;font-weight:600;line-height:1.35;min-height:38px;color:var(--branco);word-break:break-word}
@@ -896,10 +897,14 @@ function card(p){
   const esg = p.esgotado
     ? '<span class="esg">SOB CONSULTA</span>'
     : '';
+  const destq = p.destaque
+    ? `<span class="destq">${p.destaque}</span>`
+    : '';
   return `<div class="card" ${p.esgotado ? '' : `onclick="abrirPedido(${p.i})"`}>
     <div class="imgh">
       ${p.img ? `<img src="${p.img}" alt="${p.t}" loading="lazy" onerror="this.closest('.imgh').style.display='none'">` : ''}
       ${esg}
+      ${destq}
     </div>
     <div class="body">
       <div class="cat">${p.cat}</div>
@@ -1243,12 +1248,21 @@ function iniciar(){
            total = max(vminv, base) + variações + acabamentos + serviços
            qtdT  = qtdbase × qtd (cm2: nº de folhas; m²/m: nº de peças)       */
          function margem(v){ return (v || 0) * multMargem(v); }
-         function encaixe(L, W, fL, fW){
-           if(!(L > 0 && W > 0) || !(fL > 0 && fW > 0)) return 0;
-           const a = Math.floor(fL / L) * Math.floor(fW / W);
-           const b = Math.floor(fL / W) * Math.floor(fW / L);
-           return Math.max(a, b);
-         }
+          function encaixe(L, W, fL, fW){
+            if(!(L > 0 && W > 0) || !(fL > 0 && fW > 0)) return 0;
+            const a = Math.floor(fL / L) * Math.floor(fW / W);
+            const b = Math.floor(fL / W) * Math.floor(fW / L);
+            return Math.max(a, b);
+          }
+          /* Encaixe com espaçamento: gap só entre imagens que se tocam
+             (k peças ocupam k*art + (k-1)*gap) e layout na folha física. */
+          function encaixeGap(L, W, fL, fW, g){
+            if(!(L > 0 && W > 0) || !(fL > 0 && fW > 0)) return 0;
+            if(!(g > 0)) return encaixe(L, W, fL, fW);
+            const a = Math.floor((fL + g) / (L + g)) * Math.floor((fW + g) / (W + g));
+            const b = Math.floor((fL + g) / (W + g)) * Math.floor((fW + g) / (L + g));
+            return Math.max(a, b);
+          }
          /* Preço VITTO por folha A3 com desconto por volume: começa no pu no
             pacote mínimo (fdp0) e cai linearmente até o piso fdpmin
             (padrão R$ 0,20) em fdpramp folhas adicionais (padrão 50.000). */
@@ -1272,6 +1286,7 @@ function calcPreco(C, larg, comp, qtd){
             let area = null;
             let base;
             let pcArea = 0, porFolha = 0, folhas = 0;
+            let sheetL = 0, sheetW = 0;
             let puEff = C.pu || 0;
             const sel = document.getElementById('m-tamsel');
             const selectedTam = sel ? parseInt(sel.value) : 0;
@@ -1298,13 +1313,22 @@ function calcPreco(C, larg, comp, qtd){
                 base = 0;
               }
             } else if(selectedTam === -1 || (C.tp === 'cm2' && C.custom)){
-              // Medida na folha: calcula encaixe, quantidade = folhas
+              // Folha: física 21×29,7 / 29,7×42; área de impressão 20×28 / 28×40
+              // Imagem isolada: precisa caber na área de impressão
+              // Várias: layout na FOLHA física, 0,3 cm só entre imagens que se tocam
+              // Recorte: respiro (sangria) 0,7 cm — aviso, não altera encaixe
               larg = Number(larg) || 0; comp = Number(comp) || 0;
-              const fL = (C.folha ? C.folha[0] : 0.297) * 100;
-              const fW = (C.folha ? C.folha[1] : 0.42) * 100;
-              area = C.area || (fL * fW / 10000);
+              const shL = (C.folha ? C.folha[0] : 0.21) * 100;
+              const shW = (C.folha ? C.folha[1] : 0.297) * 100;
+              const paL = (C.folha1 ? C.folha1[0] : 0.2) * 100;
+              const paW = (C.folha1 ? C.folha1[1] : 0.28) * 100;
+              area = C.area || (shL * shW / 10000);
               pcArea = larg > 0 && comp > 0 ? Math.round(larg * comp / 10000 * 1000000) / 1000000 : 0;
-              porFolha = encaixe(larg, comp, fL, fW);
+              const gap = Number(C.gapCm) || 0;
+              const n1 = larg > 0 && comp > 0 ? encaixe(larg, comp, paL, paW) : 0;
+              const nG = larg > 0 && comp > 0 ? encaixeGap(larg, comp, shL, shW, gap) : 0;
+              porFolha = n1 < 1 ? 0 : (nG >= 2 ? nG : 1);
+              if(porFolha > 0){ sheetL = shL; sheetW = shW; }
               folhas = Number(qtd) || 0;
               const ppf = precoFolha(C, folhas);
               base = ppf * folhas;
@@ -1380,7 +1404,7 @@ function calcPreco(C, larg, comp, qtd){
           });
           if(C.tp === 'm') total = Math.round(total * 100) / 100;
           const venda = Math.round(total * 100) / 100;
-          return { total, venda, area, qtd, pcArea, porFolha, folhas, puEff };
+          return { total, venda, area, qtd, pcArea, porFolha, folhas, puEff, sheetL, sheetW };
         }
         function renderVars(C){
           const box = document.getElementById('m-var');
@@ -1520,7 +1544,8 @@ function calcPreco(C, larg, comp, qtd){
               document.getElementById('m-dimuni').textContent = 'cm';
               const folhaLabel = C.unlbl || (C.folha ? 'folha' : 'A3');
               if(isMedidaMode){
-                document.getElementById('m-dimlbl').textContent = 'Medida da arte — largura × comprimento em cm (calcula quantas cabem na ' + folhaLabel + ')';
+                const _pi = C.folha1 ? (String(C.folha1[0] * 100).replace('.', ',') + ' × ' + String(C.folha1[1] * 100).replace('.', ',')) : '20 × 28';
+                document.getElementById('m-dimlbl').textContent = 'Medida da arte — largura × comprimento em cm (área de impressão ' + _pi + ' · ' + String(C.gapCm || 0.3).replace('.', ',') + ' cm entre imagens que se tocam' + (C.bleedCm ? ' · no recorte o respiro (sangria) é de 7 mm (0,7 cm)' : '') + ')';
               } else {
                 document.getElementById('m-dimlbl').textContent = 'Medida do adesivo — largura × comprimento em cm (valor por ' + folhaLabel + ')';
               }
@@ -1575,7 +1600,8 @@ function calcPreco(C, larg, comp, qtd){
             // Medida personalizada: mostra dimensões
             dim.style.display = '';
             document.getElementById('m-dimuni').textContent = 'cm';
-            document.getElementById('m-dimlbl').textContent = 'Medida da arte — largura × comprimento em cm (calcula quantas cabem na ' + folhaLabel + ')';
+            const _pi = C.folha1 ? (String(C.folha1[0] * 100).replace('.', ',') + ' × ' + String(C.folha1[1] * 100).replace('.', ',')) : '20 × 28';
+                document.getElementById('m-dimlbl').textContent = 'Medida da arte — largura × comprimento em cm (área de impressão ' + _pi + ' · ' + String(C.gapCm || 0.3).replace('.', ',') + ' cm entre imagens que se tocam' + (C.bleedCm ? ' · no recorte o respiro (sangria) é de 7 mm (0,7 cm)' : '') + ')';
             const lI = document.getElementById('m-largura');
             const cI = document.getElementById('m-comprimento');
             lI.readOnly = false;
@@ -1765,16 +1791,17 @@ function calcPreco(C, larg, comp, qtd){
             const W = parseFloat(comp) || 0;
             if(L > 0 && W > 0 && r.porFolha > 0){
               const totPecas = r.porFolha * qtd;
+              const sheetTxt = r.sheetL ? ' (' + fmtDimBR(r.sheetL) + ' × ' + fmtDimBR(r.sheetW) + ' cm)' : '';
               dimdesc.className = 'tamdesc ok';
               dimdesc.textContent = fmtDimBR(L) + ' × ' + fmtDimBR(W) + ' cm · ' +
-                r.porFolha + ' peça' + (r.porFolha > 1 ? 's' : '') + ' por ' + folhaLabel + ' · ' +
+                r.porFolha + ' peça' + (r.porFolha > 1 ? 's' : '') + ' por ' + folhaLabel + sheetTxt + ' · ' +
                 qtd + ' ' + folhaLabel + (qtd > 1 ? 's' : '') + ' → ' +
                 totPecas + ' peça' + (totPecas > 1 ? 's' : '') + ' · ' + (ATUAL.prazo || 'consulte');
             } else if(L > 0 && W > 0){
               dimdesc.className = 'tamdesc warn';
-              const fLx = C.folha ? C.folha[0] * 100 : 29.7;
-              const fWx = C.folha ? C.folha[1] * 100 : 42;
-              dimdesc.textContent = 'Este tamanho não cabe na ' + folhaLabel + ' (' + fmtDimBR(fLx) + ' × ' + fmtDimBR(fWx) + ' cm).';
+              const f1Lx = C.folha1 ? C.folha1[0] * 100 : 20;
+              const f1Wx = C.folha1 ? C.folha1[1] * 100 : 28;
+              dimdesc.textContent = 'Este tamanho não cabe na área de impressão da ' + folhaLabel + ' (' + fmtDimBR(f1Lx) + ' × ' + fmtDimBR(f1Wx) + ' cm).';
             } else {
               dimdesc.className = 'tamdesc warn';
               dimdesc.textContent = 'Informe a largura e o comprimento (cm) da arte.';
