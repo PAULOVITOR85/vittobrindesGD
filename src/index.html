@@ -176,6 +176,16 @@
   .gradio label.on{border-color:var(--destaque);color:var(--destaque);background:var(--destaque-dim)}
   .gradio input{width:auto;flex:none;accent-color:var(--destaque)}
   .gradio small{color:var(--txt);font-weight:600}
+  .qtdtable{margin-top:2px}
+  .qtdtable > label{display:block;margin-bottom:6px;font-weight:700;color:var(--branco)}
+  .qtdtable table{width:100%;border-collapse:collapse;font-size:13px}
+  .qtdtable th{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--txt);text-align:left;padding:8px 10px;border-bottom:1px solid var(--borda);font-weight:700}
+  .qtdtable td{padding:10px;border-bottom:1px solid var(--borda);color:var(--txt-light);transition:all .15s ease}
+  .qtdtable tr{cursor:pointer}
+  .qtdtable tr:hover td{background:var(--card-hover)}
+  .qtdtable tr.on td{background:var(--destaque-dim);color:var(--destaque);font-weight:700}
+  .qtdtable td .qtc{display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:inherit;color:inherit}
+  .qtdtable input{width:auto;flex:none;accent-color:var(--destaque)}
   .total{background:var(--destaque-dim);border:1px solid rgba(0,232,157,.2);border-radius:var(--radius);padding:12px 14px;display:flex;justify-content:space-between;align-items:center;font-weight:700}
   .pct{background:var(--destaque-dim);border:1px solid rgba(0,232,157,.25);color:var(--destaque);border-radius:var(--radius);padding:10px 12px;font-size:13px;font-weight:600;text-align:center}
   .total .tt{font-size:12px;color:var(--destaque2)}
@@ -634,6 +644,10 @@
         <img src="../img/banner-impressao-rapida.svg" alt="Impressão Rápida">
       </div>
 
+      <div class="carousel-slide" onclick="navGo('Impressão Rápida','Calendários')" style="cursor:pointer">
+        <img src="../img/banner-calendarios.webp" alt="Calendários de Parede Personalizados">
+      </div>
+
     </div>
     <button class="carousel-arrow prev" onclick="carouselMove(-1)" aria-label="Anterior">‹</button>
     <button class="carousel-arrow next" onclick="carouselMove(1)" aria-label="Próximo">›</button>
@@ -647,6 +661,7 @@
       <button class="carousel-dot" onclick="carouselGo(6)"></button>
       <button class="carousel-dot" onclick="carouselGo(7)"></button>
       <button class="carousel-dot" onclick="carouselGo(8)"></button>
+      <button class="carousel-dot" onclick="carouselGo(9)"></button>
     </div>
   </div>
 </section>
@@ -773,7 +788,7 @@
       <div id="m-ac" style="display:none"></div>
       <div id="m-so" style="display:none"></div>
       <div id="m-msg" class="msg-arte" style="display:none"></div>
-      <div>
+      <div id="qtyblock">
         <label>Quantidade</label>
         <div class="seguni">
           <button type="button" id="unbtn" class="on" onclick="mudarModo('un')">Unidades</button>
@@ -787,7 +802,13 @@
         </div>
         <div class="hint" id="qbatch" style="display:none"></div>
         <select id="m-qty" style="display:none" onchange="recalcular()"></select>
-        
+        <div id="m-qtdtable" class="qtdtable" style="display:none">
+          <label>Escolha a quantidade:</label>
+          <table>
+            <thead><tr><th>Quantidade</th><th>Valor por unidade</th><th>Valor total</th></tr></thead>
+            <tbody id="m-qtdtbody"></tbody>
+          </table>
+        </div>
       </div>
       <div>
         <label>Detalhes adicionais (opcional)</label>
@@ -866,7 +887,7 @@
    if(l && e.message){ l.innerHTML = 'Erro ao carregar o catálogo: ' + e.message; }
  });
 
-let PRODUTOS = window.PRODUTOS || [];
+let PRODUTOS = (window.PRODUTOS || []).filter(p => !p.oculto);
 const WHATSAPP = '5521966667782';
 const WHATS_FRASE = "Olá! Vim pelo catálogo online da VITTO GD.";
 const DIAS_EXTRA = 2;
@@ -1066,10 +1087,14 @@ function renderNavCats(){
   nav.innerHTML = h;
   sincNavCats();
 }
-function navGo(c){
+function navGo(c, s){
   document.getElementById('categoria').value = c;
   sincCats();
   sincNavCats();
+  if(s !== undefined){
+    updateSubfilter(c);
+    document.getElementById('subfilter').value = s;
+  }
   apply();
   if(c){
     const el = document.getElementById('catalogo');
@@ -1369,6 +1394,13 @@ function calcPreco(C, larg, comp, qtd){
             } else {
               base = C.packprices && C.packprices[qtd] != null ? C.packprices[qtd] : (C.pu || 0) * qtd;
             }
+          (C.ac || []).forEach((a, ai) => {
+            if(a.t !== 'comarte') return;
+            const el = document.getElementById('ac-' + ai);
+            if(!el || !el.checked) return;
+            if(C.packpricesArte && C.packpricesArte[qtd] != null) base = C.packpricesArte[qtd];
+            else if(C.puArte != null){ base = C.puArte * qtd; puEff = C.puArte; }
+          });
           let vmin = C.vminon ? (C.vminv || 0) : 0;
           if(vmin && C.vminind) vmin *= qtd;
           let total = Math.max(vmin, base);
@@ -1387,6 +1419,8 @@ function calcPreco(C, larg, comp, qtd){
             if(!on) return;
             const v = a.nomargem ? (a.v || 0) : margem(a.v), t = a.t;
             if(t === 'dobro') total *= 2;
+            else if(t === 'percent') total = Math.round(total * (1 + (a.v || 0) / 100) * 100) / 100;
+            else if(t === 'comarte'){ /* preço com arte já aplicado na base */ }
             else if(t === 'm2') total += v * (area != null ? area : 1) * qtdT;
             else if(t === 'unitario') total += v * qtdT;
             else if(t === 'linear') total += v * ((comp * 2) + (larg * 2)) * qtdT;
@@ -1420,6 +1454,11 @@ function calcPreco(C, larg, comp, qtd){
         }
         function precoAc(a){
           if(a.t === 'dobro') return ' <small class="gra">Dobra o valor</small>';
+          if(a.t === 'comarte') return ' <small class="gra">−10% do valor original</small>';
+          if(a.t === 'percent'){
+            const pv = Math.abs(a.v || 0);
+            return ' <small class="gra">' + (a.v < 0 ? '−' : '+') + String(pv).replace('.', ',') + '% no total</small>';
+          }
           if(!(a.v > 0)) return '';
           const suf = a.t === 'm2' ? '/m²' : (a.t === 'unitario' ? '/un.' : (a.t === 'linear' ? '/m' : ''));
           return ' <small class="gra">+ R$ ' + fmt(a.nomargem ? a.v : margem(a.v)) + suf + '</small>';
@@ -1434,10 +1473,13 @@ function calcPreco(C, larg, comp, qtd){
           if(obg.length) h += '<div class="inclui">✓ Inclui: ' + obg.map(a => a.n).join('; ') + '</div>';
           if(acs.some(a => a.obg === 2)){
             h += '<div class="bloco"><label>' + (C.acLabel || 'Acabamentos (escolha 1)') + '</label><div class="gradio">';
-            h += '<label><input type="radio" name="acg" id="ac-nenhum" checked onchange="recalcular()"> ' + (C.acNenhum || 'NENHUM') + '</label>';
-            acs.forEach((a, ai) => {
-              if(a.obg !== 2) return;
-              h += '<label><input type="radio" name="acg" id="ac-' + ai + '" onchange="recalcular()"> ' + a.n + precoAc(a) + '</label>';
+            const g2 = [];
+            acs.forEach((a, ai) => { if(a.obg === 2) g2.push([a, ai]); });
+            const defI = g2.findIndex(x => x[0].d);
+            if(defI < 0) h += '<label><input type="radio" name="acg" id="ac-nenhum" checked onchange="recalcular()"> ' + (C.acNenhum || 'NENHUM') + '</label>';
+            g2.forEach(([a, ai], gi) => {
+              const chk = gi === defI ? ' checked' : '';
+              h += '<label><input type="radio" name="acg" id="ac-' + ai + '"' + chk + ' onchange="recalcular()"> ' + a.n + precoAc(a) + '</label>';
             });
             h += '</div></div>';
           }
@@ -1473,6 +1515,9 @@ function calcPreco(C, larg, comp, qtd){
           document.getElementById('m-prazo').textContent = ATUAL.prazo || 'consulte';
           const qsel = document.getElementById('m-qty');
           qsel.innerHTML = '';
+          document.getElementById('m-qtdtable').style.display = 'none';
+          document.querySelector('#qtyblock > label').style.display = '';
+          document.querySelector('#qtyblock .seguni').style.display = '';
           const q = document.getElementById('qtd');
           q.min = C.qmin || 1;
           q.max = C.qmax || '';
@@ -1501,6 +1546,21 @@ function calcPreco(C, larg, comp, qtd){
           document.getElementById('pkbtn').style.display = (useFolhaMode || isM2Custom || hideQty || isAdesivos) ? 'none' : '';
           document.getElementById('unbtn').style.display = (soPacotes || soPackprices || useFolhaMode || isM2Custom || hideQty) ? 'none' : '';
           mudarModo('un');
+          if(C.qtdtable && packs.length && C.packprices){
+            document.querySelector('#qtyblock > label').style.display = 'none';
+            document.querySelector('#qtyblock .seguni').style.display = 'none';
+            document.getElementById('qbatch').style.display = 'none';
+            qsel.style.display = 'none';
+            document.getElementById('m-qtdtbody').innerHTML = packs.map((p, i) => {
+              const tot = C.packprices[p];
+              return '<tr data-p="' + p + '" class="' + (i === 0 ? 'on' : '') + '" onclick="qtdTabela(' + p + ')">' +
+                '<td><label class="qtc"><input type="radio" name="qtdtbl" ' + (i === 0 ? 'checked' : '') + ' onchange="qtdTabela(' + p + ')"> ' + p + ' unidades</label></td>' +
+                '<td>R$ ' + fmt(tot / p) + '/un</td>' +
+                '<td>R$ ' + fmt(tot) + '</td></tr>';
+            }).join('');
+            q.value = packs[0];
+            document.getElementById('m-qtdtable').style.display = '';
+          }
           const tl = document.getElementById('m-tamlist');
           if(tamlist || C.fdp || C.por_cm2){
             tl.style.display = '';
@@ -1881,7 +1941,7 @@ function calcPreco(C, larg, comp, qtd){
               dimdesc.textContent = 'Informe a largura e o comprimento para calcular o preço.';
             }
           }
-          const ok = tamlist ? (r.pcArea > 0 && r.porFolha > 0) : (C.custom ? (C.tp === 'm2' ? r.area > 0 : (r.pcArea > 0 && r.porFolha > 0)) : ((C.tp !== 'm2' && C.tp !== 'cm2' && C.tp !== 'm') || r.area > 0));
+          const ok = isFolhaMode ? r.venda > 0 : (tamlist ? (r.pcArea > 0 && r.porFolha > 0) : (C.custom ? (C.tp === 'm2' ? r.area > 0 : (r.pcArea > 0 && r.porFolha > 0)) : ((C.tp !== 'm2' && C.tp !== 'cm2' && C.tp !== 'm') || r.area > 0)));
           const tot = ok && r.venda > 0 ? r.venda : ATUAL.venda * qtd;
           const folhaLbl = C.unlbl || 'folha';
           const rot = (C.custom && C.tp === 'm2') ? 'Preço (m²)' : (C.custom ? 'Preço (' + folhaLbl + ')' : (C.unlbl ? 'Preço (' + C.unlbl + ')' : (C.tp === 'm2' || C.tp === 'm' || (C.tp === 'cm2' && C.m2) ? 'Preço (m²)' : (C.tp === 'cm2' ? 'Preço (cm²)' : 'Preço (unidade)'))));
@@ -1894,6 +1954,17 @@ function calcPreco(C, larg, comp, qtd){
           }
           document.getElementById('m-lbltotal').textContent = ok ? 'Total' : 'Valor a partir de';
           document.getElementById('m-total').textContent = fmt(tot);
+        }
+        function qtdTabela(p){
+          const inp = document.getElementById('qtd');
+          inp.value = p;
+          document.querySelectorAll('#m-qtdtbody tr').forEach(tr => {
+            const on = parseInt(tr.dataset.p, 10) === p;
+            tr.classList.toggle('on', on);
+            const ri = tr.querySelector('input');
+            if(ri) ri.checked = on;
+          });
+          recalcular();
         }
         function mudarQtd(d){
           const C = ATUAL.cfg || {};
@@ -2059,9 +2130,22 @@ function calcPreco(C, larg, comp, qtd){
             const pp = precoFolha(C, qtd);
             base = pp * qtd;
             puEff = pp;
+          } else if(C.qtdtiers){
+            let puq = C.pu || 0;
+            for(let i = 0; i < C.qtdtiers.length; i++){
+              const t = C.qtdtiers[i];
+              if((Number(qtd) || 0) >= t[0]) puq = (C.pu || 0) * t[1];
+            }
+            base = puq * qtd;
+            puEff = puq;
           } else {
-            base = (C.pu || 0) * qtd;
+            base = C.packprices && C.packprices[qtd] != null ? C.packprices[qtd] : (C.pu || 0) * qtd;
           }
+          (C.ac || []).forEach((a, ai) => {
+            if(a.t !== 'comarte' || s.ac[ai] !== true) return;
+            if(C.packpricesArte && C.packpricesArte[qtd] != null) base = C.packpricesArte[qtd];
+            else if(C.puArte != null){ base = C.puArte * qtd; puEff = C.puArte; }
+          });
           let vmin = C.vminon ? (C.vminv || 0) : 0;
           if(vmin && C.vminind) vmin *= qtd;
           let total = Math.max(vmin, base);
@@ -2073,7 +2157,10 @@ function calcPreco(C, larg, comp, qtd){
           (C.ac || []).forEach((a, ai) => {
             if(s.ac[ai] !== true) return;
             const v = a.nomargem ? (a.v || 0) : margem(a.v), t = a.t;
-            if(t === 'm2') total += v * (area != null ? area : 1) * qtdT;
+            if(t === 'dobro') total *= 2;
+            else if(t === 'percent') total = Math.round(total * (1 + (a.v || 0) / 100) * 100) / 100;
+            else if(t === 'comarte'){ /* preço com arte já aplicado na base */ }
+            else if(t === 'm2') total += v * (area != null ? area : 1) * qtdT;
             else if(t === 'unitario') total += v * qtdT;
             else if(t === 'linear') total += v * ((comp * 2) + (larg * 2)) * qtdT;
             else {
