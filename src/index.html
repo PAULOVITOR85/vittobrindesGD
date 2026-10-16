@@ -887,7 +887,8 @@
    if(l && e.message){ l.innerHTML = 'Erro ao carregar o catálogo: ' + e.message; }
  });
 
-let PRODUTOS = (window.PRODUTOS || []).filter(p => !p.oculto);
+const CATS_OCULTAS = ['Adesivos Vinil (M²)']; // categorias ocultas do catálogo
+let PRODUTOS = (window.PRODUTOS || []).filter(p => !p.oculto && !CATS_OCULTAS.includes(p.cat));
 const WHATSAPP = '5521966667782';
 const WHATS_FRASE = "Olá! Vim pelo catálogo online da VITTO GD.";
 const DIAS_EXTRA = 2;
@@ -1149,7 +1150,7 @@ function renderDestaques(){
   if(!track) return;
   const porCat = {};
   PRODUTOS.forEach((p, i) => { (porCat[p.cat] = porCat[p.cat] || []).push(i); });
-  const ordem = ['Promoção', 'Adesivos', 'Banner, Lona e Faixa', 'Mini Banners Fosco', 'Mini Banners Brilho', 'Tecidos', 'PS e PVC', 'Wind Banner', 'DTF Têxtil', 'DTF UV para Rígidos', 'Tapete e Capacho', 'Papel Sublimático', 'Lambe-Lambe', 'Impressão à Laser'];
+  const ordem = ['Promoção', 'Adesivos', 'Banner, Lona e Faixa', 'Mini Banners Fosco', 'Mini Banners Brilho', 'Tecidos', 'PS e PVC', 'Wind Banner', 'DTF Têxtil', 'DTF UV para Rígidos', 'Tapete e Capacho', 'Papel Sublimático', 'Lambe-Lambe', 'Impressão Digital'];
   const idx = [];
   ordem.forEach(c => { if(porCat[c]) porCat[c].slice(0, 2).forEach(i => idx.push(i)); });
   PRODUTOS.forEach((p, i) => { if(idx.length >= 10) return; if(idx.indexOf(i) < 0) idx.push(i); });
@@ -1436,6 +1437,7 @@ function calcPreco(C, larg, comp, qtd){
             const el = document.getElementById('so-' + si);
             if(el && el.checked) total += s.nomargem ? (s.v || 0) : margem(s.v);
           });
+          if(C.addflat) total += C.addflat; /* acréscimo fixo por item (ex.: taxa de R$ 22,00) */
           if(C.tp === 'm') total = Math.round(total * 100) / 100;
           const venda = Math.round(total * 100) / 100;
           return { total, venda, area, qtd, pcArea, porFolha, folhas, puEff, sheetL, sheetW };

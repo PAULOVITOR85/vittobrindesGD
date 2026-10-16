@@ -24,3 +24,7 @@ npm-debug.log*
 tmp/
 temp/
 .cache/
+
+# ---------- Backups manuais (tarballs) ----------
+backup*.tar.xz
+backup*.tar.gz
